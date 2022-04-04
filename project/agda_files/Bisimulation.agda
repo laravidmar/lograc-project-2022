@@ -2,9 +2,12 @@ module agda_files.Bisimulation where
 
 
 open import agda_files.More
+
 open import agda_files.Properties
 open import agda_files_P1.Isomorphism
 open import agda_files.Lambda1
+
+
 
 
 
@@ -83,8 +86,7 @@ data _~_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
   → {σ† : ∀ {A} → Γ ∋ A → Δ ⊢ A}
   → (∀ {A} → (x : Γ ∋ A) → σ x ~ σ† x)
     --------------------------------------------------
-  → (∀ {A B} → (x : Γ , B ∋ A) → 
-  exts σ x ~ exts σ† x)
+  → (∀ {A B} → (x : Γ , B ∋ A) → exts σ x ~ exts σ† x)
 ~exts ~σ Z      =  ~`
 ~exts ~σ (S x)  =  ~rename S_ (~σ x)
 

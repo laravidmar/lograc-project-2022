@@ -50,7 +50,7 @@ data Context : Set where
 
 -- 5. Example
 
-  _ : Context
+_ : Context
 _ = ∅ , `ℕ ⇒ `ℕ , `ℕ
 
 
