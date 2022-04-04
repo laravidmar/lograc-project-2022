@@ -19,21 +19,21 @@ infix  4 _⊢_
 infix  4 _∋_ 
 infixl 5 _,_
 
-{-
+
 infixr 7 _⇒_
 
 infix  5 ƛ_
 infix  5 μ_
--}
+
 infix  9 S_
 
-{-
+
 infixl 7 _·_
 infix  8 `suc_
 infix  9 `_
 
 infix  9 #_
--}
+
 
 -- 3. Types
 
@@ -76,6 +76,45 @@ _ = Z
 _ : ∅ , `ℕ ⇒ `ℕ , `ℕ ∋ `ℕ ⇒ `ℕ
 _ = S Z
 
+data _⊢_ : Context → Type → Set where
+
+  `_ : ∀ {Γ A}
+    → Γ ∋ A
+      -----
+    → Γ ⊢ A
+
+  ƛ_  : ∀ {Γ A B}
+    → Γ , A ⊢ B
+      ---------
+    → Γ ⊢ A ⇒ B
+
+  _·_ : ∀ {Γ A B}
+    → Γ ⊢ A ⇒ B
+    → Γ ⊢ A
+      ---------
+    → Γ ⊢ B
+
+  `zero : ∀ {Γ}
+      ---------
+    → Γ ⊢ `ℕ
+
+  `suc_ : ∀ {Γ}
+    → Γ ⊢ `ℕ
+      ------
+    → Γ ⊢ `ℕ
+
+  case : ∀ {Γ A}
+    → Γ ⊢ `ℕ
+    → Γ ⊢ A
+    → Γ , `ℕ ⊢ A
+      ----------
+    → Γ ⊢ A
+
+  μ_ : ∀ {Γ A}
+    → Γ , A ⊢ A
+      ---------
+    → Γ ⊢ A
+    
 -- 8.
 
 _ : ∅ , `ℕ ⇒ `ℕ , `ℕ ⊢ `ℕ
@@ -100,7 +139,7 @@ _ = ƛ ƛ (` S Z · (` S Z · ` Z))
 
 
 length : Context → ℕ
-length ∅        =  zero
+length  ∅       =  zero
 length (Γ , _)  =  suc (length Γ)
 
 
