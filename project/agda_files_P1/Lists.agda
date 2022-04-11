@@ -37,7 +37,7 @@ pattern [_,_,_,_,_,_] u v w x y z = u ∷ v ∷ w ∷ x ∷ y ∷ z ∷ []
 
 --APPEND
 
-infixr 5 _++_
+infixr 5 _++_ 
 
 _++_ : ∀ {A : Set} → List A → List A → List A
 []       ++ ys  =  ys
@@ -212,4 +212,6 @@ _ =
 
 --MONOIDS
 
+consL : (A : Set) → List A → List A 
+consL a  = {! a++[] !}
 

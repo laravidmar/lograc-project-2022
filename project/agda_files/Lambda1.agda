@@ -21,6 +21,8 @@ infix  5  μ_⇒_
 infixl 7  _·_
 infix  8  `suc_
 infix  9  `_
+infixl 10  _∷L_
+infix  11  emptyL
 
 data Term : Set where
   `_                      :  Id → Term
@@ -29,7 +31,12 @@ data Term : Set where
   `zero                   :  Term
   `suc_                   :  Term → Term
   case_[zero⇒_|suc_⇒_]    :  Term → Term → Id → Term → Term
-  μ_⇒_                    :  Id → Term → Term
+  μ_⇒_                    :  Id → Term → Term 
+  `emptyL                      : Term 
+  `_∷L_                      : Term → Term  → Term 
+  case_[emptyL⇒_|_∷L_⇒_]    : Term → Term → Id  → Term → Term → Id → Term 
+
+
 
 
 
