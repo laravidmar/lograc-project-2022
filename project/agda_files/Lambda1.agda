@@ -21,8 +21,8 @@ infix  5  μ_⇒_
 infixl 7  _·_
 infix  8  `suc_
 infix  9  `_
-infixl 10  _∷L_
-infix  11  emptyL
+infixl 10  `_∷L_
+infix  11  `emptyL
 
 data Term : Set where
   `_                      :  Id → Term
@@ -34,9 +34,9 @@ data Term : Set where
   μ_⇒_                    :  Id → Term → Term 
   `emptyL                      : Term 
   `_∷L_                      : Term → Term  → Term 
-  case_[emptyL⇒_|_∷L_⇒_]    : Term → Term → Id  → Term → Term → Id → Term 
+  case_[emptyL⇒_∣_∷L_⇒_]    : Term → Term → Id  →  Id →  Term → Term
 
-
+--We added the constructer of lists so emptyL = [] and _::_ is adding to a list and case_blablabla is checking if list is empty or element is in there
 
 
 
@@ -105,6 +105,16 @@ data Value : Term → Set where
     → Value V
       --------------
     → Value (`suc V)
+
+  V-emptyL :  --adding
+    -------------
+    Value `emptyL
+
+  V-∷L : ∀ {V} {A}   -- adding 
+    → Value V
+    → Value A
+    -----------------------
+    → Value (` V ∷L A)
 
 
 infix 9 _[_:=_]
