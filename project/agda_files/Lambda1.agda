@@ -62,8 +62,7 @@ plusᶜ =  ƛ "m" ⇒ ƛ "n" ⇒ ƛ "s" ⇒ ƛ "z" ⇒
 sucᶜ : Term
 sucᶜ = ƛ "n" ⇒ `suc (` "n")
 
-{- tukej sta se dva primera, reši?
--}
+
 
 
 var? : (t : Term) → Bool
@@ -75,6 +74,12 @@ var? _      =  false
 
 case′_[zero⇒_|suc_⇒_] : Term → Term → (t : Term) → {_ : T (var? t)} → Term → Term
 case′ L [zero⇒ M |suc (` x) ⇒ N ]  =  case L [zero⇒ M |suc x ⇒ N ]
+
+--NAROBE, ali treba tukej dodt funkcijo lambda da bo on znou to poracunat 
+
+--case′_[emptyL⇒_∣_∷L_⇒_] : Term → Term → (t : Term) →  (t₁ : Term) →  {_ : T (var? t)} → {_ : T (var? t₁)}  → Term → Term 
+--case′ L [[emptyL⇒ M |(` x' ) ∷L (` x) ⇒ N ]  =  case L [emptyL⇒ M |y ∷L x ⇒ N  ]
+
 
 μ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
 μ′ (` x) ⇒ N  =  μ x ⇒ N
@@ -113,14 +118,41 @@ data Value : Term → Set where
   V-∷L : ∀ {V} {A}   -- adding 
     → Value V
     → Value A
-    -----------------------
+    -------------------
     → Value (` V ∷L A)
 
+
+
+{-
+EXAMPLE 
+* `` (ƛ "x" ⇒ ` "y") [ "y" := `zero ] `` yields `` ƛ "x" ⇒ `zero ``.
+* `` (ƛ "x" ⇒ ` "x") [ "x" := `zero ] `` yields `` ƛ "x" ⇒ ` "x" ``. --> HERE IS AN identity
+* `` (ƛ "y" ⇒ ` "y") [ "x" := `zero ] `` yields `` ƛ "y" ⇒ ` "y" ``. --> HERE IS AN identity
+
+In the last but one example, substituting `` `zero `` for `x` in
+`` ƛ "x" ⇒ ` "x" `` does _not_ yield `` ƛ "x" ⇒ `zero ``,
+since `x` is bound in the lambda abstraction.
+The choice of bound names is irrelevant: both
+`` ƛ "x" ⇒ ` "x" `` and `` ƛ "y" ⇒ ` "y" `` stand for the
+identity function.  One way to think of this is that `x` within
+the body of the abstraction stands for a _different_ variable than
+`x` outside the abstraction, they just happen to have the same name.
+
+-}
+
+{- BOUNDED AND FREE VARIABLES 
+ (ƛ "y" ⇒ ` "y") · ` "x"
+
+in which `y` is bound and `x` is free. 
+
+-}
+
+--`N [ x := V ]` to pomeni da v N ju zamenjamo V za x , tj. substitution , V needs to be a closed term 
 
 infix 9 _[_:=_]
 
 _[_:=_] : Term → Id → Term → Term
-(` x) [ y := V ] with x ≟ y
+(` x) [ y := V ] with x ≟ y    --≟ to pomeni ali sta spremenljivki isti ali ne... ločimo primera yes and no
 ... | yes _          =  V
 ... | no  _          =  ` x
 (ƛ x ⇒ N) [ y := V ] with x ≟ y
@@ -135,7 +167,16 @@ _[_:=_] : Term → Id → Term → Term
 (μ x ⇒ N) [ y := V ] with x ≟ y
 ... | yes _          =  μ x ⇒ N
 ... | no  _          =  μ x ⇒ N [ y := V ]
+(`emptyL) [ y := V ]   =  `emptyL
+(` M' ∷L M) [ y := V ]  = ` (M' [ y := V ]) ∷L ( M [ y := V ])
+(case` L [emptyL⇒ M | x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
+... | yes _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L x ⇒ N ]
+... | no  _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L x ⇒ N  ]
+... | yes _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L (x [ y := V ]) ⇒ N ]
+... | no  _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L (x [ y := V ]) ⇒ N ]
 
+
+--conformation for above definition
 _ : (ƛ "z" ⇒ ` "s" · (` "s" · ` "z")) [ "s" := sucᶜ ] ≡ ƛ "z" ⇒ sucᶜ · (sucᶜ · ` "z")
 _ = refl
 
