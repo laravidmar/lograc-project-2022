@@ -169,11 +169,11 @@ _[_:=_] : Term → Id → Term → Term
 ... | no  _          =  μ x ⇒ N [ y := V ]
 (`emptyL) [ y := V ]   =  `emptyL
 (` M' ∷L M) [ y := V ]  = ` (M' [ y := V ]) ∷L ( M [ y := V ])
-(case` L [emptyL⇒ M | x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
-... | yes _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L x ⇒ N ]
-... | no  _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L x ⇒ N  ]
-... | yes _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L (x [ y := V ]) ⇒ N ]
-... | no  _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L (x [ y := V ]) ⇒ N ]
+-- (case` L [emptyL⇒ M | x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
+-- ... | yes _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L x ⇒ N ]
+-- ... | no  _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L x ⇒ N  ]
+-- ... | yes _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L (x [ y := V ]) ⇒ N ]
+-- ... | no  _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L (x [ y := V ]) ⇒ N ]
 
 
 --conformation for above definition
