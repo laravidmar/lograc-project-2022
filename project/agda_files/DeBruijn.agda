@@ -7,9 +7,33 @@ open import Data.Empty using (⊥; ⊥-elim)
 open import Data.Nat using (ℕ; zero; suc; _<_; _≤?_; z≤n; s≤s)
 open import Relation.Nullary using (¬_)
 open import Relation.Nullary.Decidable using (True; toWitness)
+{-
+Another approach, followed in this chapter,
+is to first define types and then define terms.
+Terms and type rules are intertwined, and it makes no sense to talk
+of a term without a type.
+The two approaches are sometimes called _Curry style_ and _Church style_.
 
---open import agda_files.Lambda1
---open import agda_files2.Properties
+
+Here we are going to replace the type `Term` of
+raw terms by the type `Γ ⊢ A` of intrinsically-typed terms
+which in context `Γ` have type `A`.
+
+
+
+  * `` `zero `` corresponds to `⊢zero`
+  * `` `suc_ `` corresponds to `⊢suc`
+  * `` case_[zero⇒_|suc_⇒_] `` corresponds to `⊢case`
+  * `μ_⇒_` corresponds to `⊢μ`
+
+Note the two lookup judgments `∋m` and `∋m′` refer to two
+different bindings of variables named `"m"`.  In contrast, the
+two judgments `∋n` and `∋n′` both refer to the same binding
+of `"n"` but accessed in different contexts, the first where
+`"n"` is the last binding in the context, and the second after
+`"m"` is bound in the successor branch of the case.
+-}
+
 
 
 -- 2. Syntax
@@ -30,6 +54,7 @@ infix  9 S_
 
 infixl 7 _·_
 infix  8 `suc_
+infix  8 `_∷L_
 infix  9 `_
 
 infix  9 #_
@@ -40,10 +65,14 @@ infix  9 #_
 data Type : Set where
   _⇒_ : Type → Type → Type
   `ℕ  : Type
+  `List :  Type --add a type list 
 
 -- 4. Contexts
 
-
+{-
+ We write `∅` for the empty
+context, and `Γ , A` for the context `Γ` extended by type `A`.
+-}
 data Context : Set where
   ∅   : Context
   _,_ : Context → Type → Context
@@ -55,7 +84,13 @@ _ = ∅ , `ℕ ⇒ `ℕ , `ℕ
 
 
 -- 6.
+{-
+We write
 
+    Γ ∋ A
+
+for VARIABLES which in context `Γ` have type `A`.
+-}
 data _∋_ : Context → Type → Set where
 
   Z : ∀ {Γ A}
@@ -75,6 +110,15 @@ _ = Z
 
 _ : ∅ , `ℕ ⇒ `ℕ , `ℕ ∋ `ℕ ⇒ `ℕ
 _ = S Z
+
+
+{-
+We write
+
+    Γ ⊢ A
+
+for terms which in context `Γ` have type `A`.
+-}
 
 data _⊢_ : Context → Type → Set where
 
@@ -114,7 +158,27 @@ data _⊢_ : Context → Type → Set where
     → Γ , A ⊢ A
       ---------
     → Γ ⊢ A
-    
+  
+  `emptyL : ∀ {Γ}
+      ---------
+    → Γ ⊢ `List
+
+  `_∷L_ : ∀ {Γ A}
+    → Γ ⊢ A  --haed is in list... one element 
+    → Γ ⊢ `List --tail is in list
+      ------
+    → Γ ⊢ `List -- sedi constructer in list
+
+  caseL : ∀ {Γ A}
+    → Γ ⊢ `List  
+    → Γ ⊢ A
+    → Γ , `List  ⊢ A  --tail  is in list
+    → Γ , `List  ⊢ A  -- head is in list
+      ----------
+    → Γ ⊢ A --Bool ?
+
+
+--DO WE NEED TO ADD HEAD AND TAIL OD THE LIST 
 -- 8.
 
 _ : ∅ , `ℕ ⇒ `ℕ , `ℕ ⊢ `ℕ
@@ -137,23 +201,35 @@ _ = ƛ ƛ (` S Z · (` S Z · ` Z))
 
 
 
-
+--izracna dolzino izraza
 length : Context → ℕ
 length  ∅       =  zero
 length (Γ , _)  =  suc (length Γ)
 
-
-
+--We can use a natural number to select a type from a context:
 lookup : {Γ : Context} → {n : ℕ} → (p : n < length Γ) → Type
 lookup {(_ , A)} {zero}    (s≤s z≤n)  =  A
 lookup {(Γ , _)} {(suc n)} (s≤s p)    =  lookup p
 
+{-
+Given the above, we can convert a natural to a corresponding
+de Bruijn index, looking up its type in the context:
+-}
+
+--tuki ostala 
 
 count : ∀ {Γ} → {n : ℕ} → (p : n < length Γ) → Γ ∋ lookup p
 count {_ , _} {zero}    (s≤s z≤n)  =  Z
 count {Γ , _} {(suc n)} (s≤s p)    =  S (count p)
 
+{-
+Function `#_` takes an implicit argument `n∈Γ` that provides evidence for `n` to
+be within the context's bounds. 
 
+The type of `n∈Γ` guards
+against invoking `#_` on an `n` that is out of context bounds. Finally, in the
+return type `n∈Γ` is converted to a witness that `n` is within the bounds.
+-}
 
 #_ : ∀ {Γ}
   → (n : ℕ)
@@ -164,7 +240,7 @@ count {Γ , _} {(suc n)} (s≤s p)    =  S (count p)
 
 
 
-
+--primer numerical two
 _ : ∅ ⊢ (`ℕ ⇒ `ℕ) ⇒ `ℕ ⇒ `ℕ
 _ = ƛ ƛ (# 1 · (# 1 · # 0))
 
@@ -202,12 +278,20 @@ sucᶜ = ƛ `suc (# 0)
 2+2ᶜ = plusᶜ · twoᶜ · twoᶜ · sucᶜ · `zero 
 
 
--- Exercise mul
-
--- Your code goes here
-
-
 -- Renaming
+
+{-
+Let `ρ` be the name of the map that takes variables in `Γ`
+to variables in `Δ`.  Consider the de Bruijn index of the
+variable in `Γ , B`:
+
+* If it is `Z`, which has type `B` in `Γ , B`,
+  then we return `Z`, which also has type `B` in `Δ , B`.
+
+* If it is `S x`, for some variable `x` in `Γ`, then `ρ x`
+  is a variable in `Δ`, and hence `S (ρ x)` is a variable in
+  `Δ , B`.
+-}
 
 ext : ∀ {Γ Δ}
   → (∀ {A} →       Γ ∋ A →     Δ ∋ A)
@@ -230,11 +314,14 @@ rename ρ (`zero)        =  `zero
 rename ρ (`suc M)       =  `suc (rename ρ M)
 rename ρ (case L M N)   =  case (rename ρ L) (rename ρ M) (rename (ext ρ) N)
 rename ρ (μ N)          =  μ (rename (ext ρ) N)
+rename ρ (`emptyL)      =  `emptyL
+rename ρ (` M' ∷L M)    = ` (rename ρ M') ∷L (rename ρ M)
+rename ρ (caseL L M N N') = caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
 
 
 
 
-
+--example
 M₀ : ∅ , `ℕ ⇒ `ℕ ⊢ `ℕ ⇒ `ℕ
 M₀ = ƛ (# 1 · (# 1 · # 0))
 
@@ -248,6 +335,23 @@ _ = refl
 
 
 --Simultaneous Substitution
+{-
+Let `σ` be the name of the map that takes variables in `Γ`
+to terms over `Δ`.  Consider the de Bruijn index of the
+variable in `Γ , B`:
+
+* If it is `Z`, which has type `B` in `Γ , B`,
+  then we return the term `` ` Z``, which also has
+  type `B` in `Δ , B`.
+
+* If it is `S x`, for some variable `x` in `Γ`, then
+  `σ x` is a term in `Δ`, and hence `rename S_ (σ x)`
+  is a term in `Δ , B`.
+
+This is why we had to define renaming first, since
+we require it to convert a term over context `Δ`
+to a term over the extended context `Δ , B`.
+-}
 exts : ∀ {Γ Δ}
   → (∀ {A} →       Γ ∋ A →     Δ ⊢ A)
     ---------------------------------
@@ -256,7 +360,14 @@ exts σ Z      =  ` Z
 exts σ (S x)  =  rename S_ (σ x)
 
 
+{-
+If variables in one context map
+to terms over another, then terms in the first context
+map to terms in the second:
 
+Let `σ` be the name of the map that takes variables in `Γ`
+to terms over `Δ`.  Let's unpack the first three cases:
+-}
 
 subst : ∀ {Γ Δ}
   → (∀ {A} → Γ ∋ A → Δ ⊢ A)
@@ -269,9 +380,12 @@ subst σ (`zero)        =  `zero
 subst σ (`suc M)       =  `suc (subst σ M)
 subst σ (case L M N)   =  case (subst σ L) (subst σ M) (subst (exts σ) N)
 subst σ (μ N)          =  μ (subst (exts σ) N)
+subst σ (`emptyL)        =  `emptyL
+subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
+subst σ (caseL L M N N')   =  caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
 
 
---Single substitution
+--Single substitution. general case
 
 _[_] : ∀ {Γ A B}
   → Γ , B ⊢ A
@@ -287,7 +401,7 @@ _[_] {Γ} {A} {B} N M =  subst {Γ , B} {Γ} σ {A} N
 
 
 
-
+--example
 M₂ : ∅ , `ℕ ⇒ `ℕ ⊢ `ℕ ⇒ `ℕ
 M₂ = ƛ # 1 · (# 1 · # 0)
 
@@ -299,10 +413,6 @@ M₄ = ƛ (ƛ `suc # 0) · ((ƛ `suc # 0) · # 0)
 
 _ : M₂ [ M₃ ] ≡ M₄
 _ = refl
-
-
-
-
 
 
 M₅ : ∅ , `ℕ ⇒ `ℕ , `ℕ ⊢ (`ℕ ⇒ `ℕ) ⇒ `ℕ
@@ -337,11 +447,29 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
       --------------
     → Value (`suc V)
 
+  V-emptyL : ∀ {Γ}
+      -----------------
+    → Value (`emptyL {Γ})
+
+  V-cons : ∀ {Γ} {V : Γ ⊢ `List} {W : Γ ⊢ `List}
+    → Value V --value for head
+    → Value W --value for tail
+      --------------
+    → Value (` V ∷L W)
 
 
 
 --Reduction
+{-
+As before, we
+have compatibility rules that reduce a part of a term,
+labelled with `ξ`, and rules that simplify a constructor
+combined with a destructor, labelled with `β`:
 
+`ξ` --> zmanjša del izraz
+`β -->poenostavljajo konstruktor
+v kombinaciji z destruktorjem, označenim z `β`:
+-}
 infix 2 _—→_
 
 data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
@@ -385,10 +513,31 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       ----------------
     → μ N —→ N [ μ N ]
 
+  ξ-cons : ∀ {Γ} {M M′ : Γ ⊢ `List} {N N′ : Γ ⊢ `List} -- zmanjsamo izraz
+    → M —→ M′
+    → N —→ N′
+      -----------------
+    → ` M ∷L N —→ ` M′ ∷L N′
+
+  ξ-caseL : ∀ {Γ A} {L L′ : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A}  {W : Γ , `List ⊢ A}
+    → L —→ L′
+      -------------------------
+    → caseL L M N W —→ caseL L′ M N W
+
+  β-emptyL :  ∀ {Γ A} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {W : Γ , `List ⊢ A}
+      -------------------
+    → caseL `emptyL M N W —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
+
+  -- β-cons : ∀ {Γ A} {V : Γ ⊢ `List} {W : Γ , `List ⊢ A} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {N' : Γ , `List ⊢ A} 
+  --   → Value V
+  --   → Value W
+  --     ----------------------------
+  --   → caseL (` W ∷L V) M N N'—→ N [ W ] 
 
 
 
---Reflexive and transitive closure
+
+--Reflexive and transitive closure --> ass before
 
 infix  2 _—↠_
 infix  1 begin_
@@ -532,6 +681,12 @@ progress (case L M N) with progress L
 ...    | done V-zero                    =  step (β-zero)
 ...    | done (V-suc VL)                =  step (β-suc VL)
 progress (μ N)                          =  step (β-μ)
+progress (`emptyL)                        =  done V-emptyL
+-- progress (` N ∷L M) with progress M 
+-- ...    | step N—→N′ M—→M′                     =  step (ξ-cons N—→N′ M—→M′ )
+-- ...    | done VM VN                      =  done (V-cons VM VN)
+--tose ne dela
+
 
 
 
@@ -566,6 +721,7 @@ data Steps {A} : ∅ ⊢ A → Set where
     → Steps L
 
 
+--The evaluator takes gas and a term and returns the corresponding steps:
 
 eval : ∀ {A}
   → Gas
@@ -581,7 +737,7 @@ eval (gas (suc m)) L with progress L
 
 
 
---Examples
+--Examples do konca
 
 sucμ : ∅ ⊢ `ℕ
 sucμ = μ (`suc (# 0))
@@ -824,4 +980,4 @@ _ : eval (gas 100) (plusᶜ · twoᶜ · twoᶜ · sucᶜ · `zero) ≡
     `suc (`suc (`suc (`suc `zero)))
    ∎)
    (done (V-suc (V-suc (V-suc (V-suc V-zero)))))
-_ = refl
+_ = refl  

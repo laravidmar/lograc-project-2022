@@ -27,6 +27,7 @@ infix  11  `emptyL
 data Term : Set where
   `_                      :  Id → Term
   ƛ_⇒_                    :  Id → Term → Term
+  _ƛ_⇒_                   : Id → Id → Term → Term 
   _·_                     :  Term → Term → Term
   `zero                   :  Term
   `suc_                   :  Term → Term
@@ -35,6 +36,7 @@ data Term : Set where
   `emptyL                      : Term 
   `_∷L_                      : Term → Term  → Term 
   case_[emptyL⇒_∣_∷L_⇒_]    : Term → Term → Id  →  Id →  Term → Term
+
 
 --We added the constructer of lists so emptyL = [] and _::_ is adding to a list and case_blablabla is checking if list is empty or element is in there
 
@@ -72,13 +74,16 @@ var? _      =  false
 ƛ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
 ƛ′_⇒_ (` x) N = ƛ x ⇒ N
 
+′_ƛ′_⇒_ : (t : Term) →  {_ : T (var? t)} → (t₁ : Term ) → {_ : T (var? t₁)} → Term → Term
+′_ƛ′_⇒_ (` x) N (` x')= x ƛ x' ⇒ N
+
 case′_[zero⇒_|suc_⇒_] : Term → Term → (t : Term) → {_ : T (var? t)} → Term → Term
 case′ L [zero⇒ M |suc (` x) ⇒ N ]  =  case L [zero⇒ M |suc x ⇒ N ]
 
 --NAROBE, ali treba tukej dodt funkcijo lambda da bo on znou to poracunat 
 
---case′_[emptyL⇒_∣_∷L_⇒_] : Term → Term → (t : Term) →  (t₁ : Term) →  {_ : T (var? t)} → {_ : T (var? t₁)}  → Term → Term 
---case′ L [[emptyL⇒ M |(` x' ) ∷L (` x) ⇒ N ]  =  case L [emptyL⇒ M |y ∷L x ⇒ N  ]
+-- case′_[emptyL⇒_∣_∷L_⇒_] : Term → Term  → (t : Term) →  {_ : T (var? t)} → (t₁ : Term ) → {_ : T (var? t₁)}  → Term → Term 
+-- case′ L [[emptyL⇒ M |(` x' ) ∷L (` x) ⇒ N ]  =  case L [emptyL⇒ M |y ∷L x ⇒ N  ]
 
 
 μ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
@@ -192,6 +197,9 @@ _ = refl
 _ : (ƛ "y" ⇒ ` "y") [ "x" := `zero ] ≡ ƛ "y" ⇒ ` "y"
 _ = refl
 
+--If `M —→ N`, we say that
+--term `M` _reduces_ to term `N`, or equivalently,
+--term `M` _steps_ to term `N`.
 
 infix 4 _—→_
 
@@ -235,6 +243,11 @@ data _—→_ : Term → Term → Set where
   β-μ : ∀ {x M}
       ------------------------------
     → μ x ⇒ M —→ M [ x := μ x ⇒ M ]
+
+  -- ξ-∷L : ∀ {M N N′)}
+  --   →  N —→ N′ 
+  --     ------------------
+  --   → ` N ∷L M —→ ` N′ ∷L M
 
 
 infix  2 _—↠_
@@ -394,6 +407,8 @@ infixr 7 _⇒_
 data Type : Set where
   _⇒_ : Type → Type → Type
   `ℕ : Type
+  `List :  Type
+
 
 infixl 5  _,_⦂_
 
@@ -477,6 +492,27 @@ data _⊢_⦂_ : Context → Term → Type → Set where
     → Γ , x ⦂ A ⊢ M ⦂ A
       -----------------
     → Γ ⊢ μ x ⇒ M ⦂ A
+
+  -- -- L-I₁
+  -- ⊢emptyL : ∀ {Γ}
+  --     --------------
+  --   → Γ ⊢ `emptyL ⦂ `List
+
+  -- -- L-I₂
+  -- ⊢cons : ∀ {Γ L M A}
+  --   → Γ ⊢ L ⦂ `List
+  --   → Γ ⊢ M ⦂ A
+  --     ---------------
+  --   → Γ ⊢ ` M ∷L L ⦂ `List
+
+  -- -- ℕ-E
+  -- ⊢caseL : ∀ {Γ L M x y N A}
+  --   → Γ ⊢ L ⦂ `List
+  --   → Γ ⊢ M ⦂ A
+  --   → Γ , x ⦂ `List ⊢ N ⦂ A
+  --   → Γ , y ⦂ `List ⊢ N ⦂ A
+  --     -------------------------------------
+  --   → Γ ⊢ case L [emptyL⇒ M |y ∷L x ⇒ N ] ⦂ A
 
 
 Ch : Type → Type

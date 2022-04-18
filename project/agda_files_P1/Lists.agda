@@ -210,8 +210,5 @@ _ =
     10
   ∎
 
---MONOIDS
 
-consL : (A : Set) → List A → List A 
-consL a  = {! a++[] !}
 
