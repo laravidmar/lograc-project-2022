@@ -27,7 +27,7 @@ infix  11  `emptyL
 data Term : Set where
   `_                      :  Id → Term
   ƛ_⇒_                    :  Id → Term → Term
-  _ƛ_⇒_                   : Id → Id → Term → Term 
+  --_ƛ_⇒_                   : Id → Id → Term → Term 
   _·_                     :  Term → Term → Term
   `zero                   :  Term
   `suc_                   :  Term → Term
@@ -35,7 +35,7 @@ data Term : Set where
   μ_⇒_                    :  Id → Term → Term 
   `emptyL                      : Term 
   `_∷L_                      : Term → Term  → Term 
-  case_[emptyL⇒_∣_∷L_⇒_]    : Term → Term → Id  →  Id →  Term → Term
+  caseL_[emptyL⇒_∣_∷L_⇒_]   : Term → Term → Id  →  Id →  Term → Term
 
 
 --We added the constructer of lists so emptyL = [] and _::_ is adding to a list and case_blablabla is checking if list is empty or element is in there
@@ -74,16 +74,15 @@ var? _      =  false
 ƛ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
 ƛ′_⇒_ (` x) N = ƛ x ⇒ N
 
-′_ƛ′_⇒_ : (t : Term) →  {_ : T (var? t)} → (t₁ : Term ) → {_ : T (var? t₁)} → Term → Term
-′_ƛ′_⇒_ (` x) N (` x')= x ƛ x' ⇒ N
+-- ′_ƛ′_⇒_ : (t : Term) →  {_ : T (var? t)} → (t₁ : Term ) → {_ : T (var? t₁)} → Term → Term
+-- ′_ƛ′_⇒_ (` x) N (` x')= x ƛ x' ⇒ N
 
 case′_[zero⇒_|suc_⇒_] : Term → Term → (t : Term) → {_ : T (var? t)} → Term → Term
 case′ L [zero⇒ M |suc (` x) ⇒ N ]  =  case L [zero⇒ M |suc x ⇒ N ]
 
---NAROBE, ali treba tukej dodt funkcijo lambda da bo on znou to poracunat 
 
--- case′_[emptyL⇒_∣_∷L_⇒_] : Term → Term  → (t : Term) →  {_ : T (var? t)} → (t₁ : Term ) → {_ : T (var? t₁)}  → Term → Term 
--- case′ L [[emptyL⇒ M |(` x' ) ∷L (` x) ⇒ N ]  =  case L [emptyL⇒ M |y ∷L x ⇒ N  ]
+caseL′_[emptyL⇒_∣_∷L_⇒_] : Term → Term  → (t : Term) →  {_ : T (var? t)} →(t₁ : Term) → {_ : T (var? t₁)} → Term  → Term  -- for every id we need one t so theh ∷L can be processed
+caseL′ L [emptyL⇒ M ∣(` y ) ∷L (` x) ⇒ N ]  =  caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ]
 
 
 μ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
@@ -174,11 +173,11 @@ _[_:=_] : Term → Id → Term → Term
 ... | no  _          =  μ x ⇒ N [ y := V ]
 (`emptyL) [ y := V ]   =  `emptyL
 (` M' ∷L M) [ y := V ]  = ` (M' [ y := V ]) ∷L ( M [ y := V ])
--- (case` L [emptyL⇒ M | x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
--- ... | yes _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L x ⇒ N ]
--- ... | no  _  | yes _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L x ⇒ N  ]
--- ... | yes _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |x' ∷L (x [ y := V ]) ⇒ N ]
--- ... | no  _  | no _        =  case L [ y := V ] [emptyL⇒ M [ y := V ] |(x' [ y := V ]) ∷L (x [ y := V ]) ⇒ N ]
+(caseL L [emptyL⇒ M ∣ x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
+... | yes _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N ]
+... | no  _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ (x') ∷L x ⇒ N [ y := V ] ] -- to pomoje ni prou ker kako in ve da mora to aplicirat ravno na prvi argument
+... | yes _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N [ y := V ] ] --tuki bi mogu na druzga narest 
+... | no  _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L (x) ⇒ N [ y := V ] ]
 
 
 --conformation for above definition
@@ -200,6 +199,11 @@ _ = refl
 --If `M —→ N`, we say that
 --term `M` _reduces_ to term `N`, or equivalently,
 --term `M` _steps_ to term `N`.
+
+{-
+If a term is a value, then no reduction applies; conversely,
+if a reduction applies to a term then it is not a value.
+-}
 
 infix 4 _—→_
 
@@ -244,10 +248,28 @@ data _—→_ : Term → Term → Set where
       ------------------------------
     → μ x ⇒ M —→ M [ x := μ x ⇒ M ]
 
-  -- ξ-∷L : ∀ {M N N′)}
-  --   →  N —→ N′ 
-  --     ------------------
-  --   → ` N ∷L M —→ ` N′ ∷L M
+  --Lists
+
+  ξ-cons : ∀ {N N′ M M′}
+      → M —→ M′
+      → N —→ N′ 
+        ------------------
+      → ` N ∷L M —→ ` N′ ∷L M′
+
+
+  ξ-caseL : ∀ {x  y L L′ M N}
+    → L —→ L′
+     -----------------------------------------------------------------
+    → caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ caseL L′ [emptyL⇒ M ∣ x ∷L y ⇒ N  ]
+  
+  β-emptyL : ∀ {x y M N}
+      ----------------------------------------
+    → caseL `emptyL [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ M --začetni seznam je prazn zato vrne M 
+
+  β-cons : ∀ {x y V W M N}
+    → Value V --imamo vrednost V se pravi seznma ni prazn in gre v drugi if stavek
+      ---------------------------------------------------
+    → caseL ` V ∷L W [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ N [ x := V ]
 
 
 infix  2 _—↠_
@@ -290,8 +312,28 @@ data _—↠′_ : Term → Term → Set where
       -------
     → L —↠′ N
 
+-- Confluence
+{-
+_confluent_.  If term `L` reduces to two other terms,
+`M` and `N`, then both of these reduce to a common term `P`.
+It can be illustrated as follows:
 
+               L
+              / \
+             /   \
+            /     \
+           M       N
+            \     /
+             \   /
+              \ /
+               P
 
+If each line stands for zero
+or more reduction steps, this is called confluence,
+while if the top two lines stand for a single reduction
+step and the bottom two stand for zero or more reduction
+steps it is called the diamond property.
+-}
 postulate
   confluence : ∀ {L M N}
     → ((L —↠ M) × (L —↠ N))
@@ -312,6 +354,7 @@ postulate
       ------
     → M ≡ N
 
+--example
 _ : twoᶜ · sucᶜ · `zero —↠ `suc `suc `zero
 _ =
   begin
@@ -402,6 +445,14 @@ _ =
    `suc (`suc (`suc (`suc `zero)))
   ∎
 
+--Syntax of types
+
+{-
+
+Here is the syntax of types in BNF:
+
+    A, B, C  ::=  A ⇒ B | `ℕ
+-}
 infixr 7 _⇒_
 
 data Type : Set where
@@ -409,13 +460,17 @@ data Type : Set where
   `ℕ : Type
   `List :  Type
 
-
+{-
+We write `∅` for the empty context, and `Γ , x ⦂ A`
+for the context that extends `Γ` by mapping variable `x` to type `A`.
+-}
 infixl 5  _,_⦂_
 
 data Context : Set where
   ∅     : Context
   _,_⦂_ : Context → Id → Type → Context
 
+--indicates in context `Γ` that variable `x` has type `A`.
 
 infix  4  _∋_⦂_
 
@@ -493,26 +548,26 @@ data _⊢_⦂_ : Context → Term → Type → Set where
       -----------------
     → Γ ⊢ μ x ⇒ M ⦂ A
 
-  -- -- L-I₁
-  -- ⊢emptyL : ∀ {Γ}
-  --     --------------
-  --   → Γ ⊢ `emptyL ⦂ `List
+  -- -- List-I₁
+  ⊢emptyL : ∀ {Γ}
+      --------------
+    → Γ ⊢ `emptyL ⦂ `List
 
-  -- -- L-I₂
-  -- ⊢cons : ∀ {Γ L M A}
-  --   → Γ ⊢ L ⦂ `List
-  --   → Γ ⊢ M ⦂ A
-  --     ---------------
-  --   → Γ ⊢ ` M ∷L L ⦂ `List
+  -- L-I₂
+  ⊢cons : ∀ {Γ L M A}
+    → Γ ⊢ L ⦂ `List
+    → Γ ⊢ M ⦂ A
+      ---------------
+    → Γ ⊢ ` M ∷L L ⦂ `List
 
   -- -- ℕ-E
-  -- ⊢caseL : ∀ {Γ L M x y N A}
-  --   → Γ ⊢ L ⦂ `List
-  --   → Γ ⊢ M ⦂ A
-  --   → Γ , x ⦂ `List ⊢ N ⦂ A
-  --   → Γ , y ⦂ `List ⊢ N ⦂ A
-  --     -------------------------------------
-  --   → Γ ⊢ case L [emptyL⇒ M |y ∷L x ⇒ N ] ⦂ A
+  ⊢caseL : ∀ {Γ L M x y N A}
+    → Γ ⊢ L ⦂ `List
+    → Γ ⊢ M ⦂ A
+    → Γ , x ⦂ `List ⊢ N ⦂ A
+    → Γ , y ⦂ `List ⊢ N ⦂ A
+      -------------------------------------
+    → Γ ⊢ caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ] ⦂ A
 
 
 Ch : Type → Type

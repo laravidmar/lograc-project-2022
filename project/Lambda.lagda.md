@@ -1177,6 +1177,9 @@ data _⊢_⦂_ : Context → Term → Type → Set where
     → Γ , x ⦂ A ⊢ M ⦂ A
       -----------------
     → Γ ⊢ μ x ⇒ M ⦂ A
+
+
+  
 ```
 
 Each type rule is named after the constructor for the

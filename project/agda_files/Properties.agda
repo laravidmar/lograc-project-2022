@@ -23,6 +23,9 @@ V¬—→ : ∀ {M N}
 V¬—→ V-ƛ        ()
 V¬—→ V-zero     ()
 V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
+V¬—→ V-emptyL     ()
+--V¬—→ (V-∷L VM M') (ξ-cons M—→N M') = V¬—→ VM M—→N
+
 
 —→¬V : ∀ {M N}
   → M —→ N

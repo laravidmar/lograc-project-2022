@@ -528,11 +528,10 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       -------------------
     → caseL `emptyL M N W —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
 
-  -- β-cons : ∀ {Γ A} {V : Γ ⊢ `List} {W : Γ , `List ⊢ A} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {N' : Γ , `List ⊢ A} 
+  -- β-cons : ∀ {Γ A} {V : Γ ⊢ `List} {W : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {N' : Γ , `List ⊢ A}  
   --   → Value V
-  --   → Value W
   --     ----------------------------
-  --   → caseL (` W ∷L V) M N N'—→ N [ W ] 
+  --   → caseL (` V ∷L W) M N' N —→ N [ V ] 
 
 
 
@@ -682,9 +681,14 @@ progress (case L M N) with progress L
 ...    | done (V-suc VL)                =  step (β-suc VL)
 progress (μ N)                          =  step (β-μ)
 progress (`emptyL)                        =  done V-emptyL
--- progress (` N ∷L M) with progress M 
--- ...    | step N—→N′ M—→M′                     =  step (ξ-cons N—→N′ M—→M′ )
--- ...    | done VM VN                      =  done (V-cons VM VN)
+progress (` N ∷L M) with progress N -- tuki in progress N ker je N in A 
+...    | done VN                      = done (V-cons VN M )
+-- ...    | step N—→N′ with progress N 
+-- ...         | step M—→M′               =  step (ξ-cons N—→N′  M—→M′)   
+-- progress (caseL L M N O) with progress L
+-- ...    | step L—→L′                     =  step (ξ-caseL L—→L′)
+-- ...    | done V-emptyL                    =  step (β-emptyL)
+-- ...    | done (V-cons VL M)                =  step (β-cons VL M)   
 --tose ne dela
 
 
