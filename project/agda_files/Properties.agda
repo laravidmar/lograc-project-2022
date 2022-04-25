@@ -24,9 +24,11 @@ V¬—→ V-ƛ        ()
 V¬—→ V-zero     ()
 V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 V¬—→ V-emptyL     ()
---V¬—→ (V-∷L VM M') (ξ-cons M—→N M') = V¬—→ VM M—→N
+V¬—→ (V-∷L VM M') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
+--and cons changes the head of the list so if it is a value do not reduce
 
 
+--terms that reduce are not values:
 —→¬V : ∀ {M N}
   → M —→ N
     ---------
@@ -52,6 +54,18 @@ data Canonical_⦂_ : Term → Type → Set where
       ---------------------
     → Canonical `suc V ⦂ `ℕ
 
+  C-emptyL :
+      --------------------
+      Canonical `emptyL ⦂ `List
+
+  C-cons : ∀ {V W}
+    → Canonical V ⦂ `List
+    → Canonical W ⦂ `List
+      ---------------------
+    → Canonical ` V ∷L W ⦂ `List
+
+--_Progress_: If `∅ ⊢ M ⦂ A` then either `M` is a value or there is an `N` such
+--that `M —→ N`.
 
 data Progress (M : Term) : Set where
 
@@ -64,6 +78,12 @@ data Progress (M : Term) : Set where
       Value M
       ----------
     → Progress M
+
+{-
+A term `M` makes progress if either it can take a step, meaning there
+exists a term `N` such that `M —→ N`, or if it is done, meaning that
+`M` is a value.
+-}
 
 progress : ∀ {M A}
   → ∅ ⊢ M ⦂ A
@@ -86,6 +106,16 @@ progress (⊢case ⊢L ⊢M ⊢N) with progress ⊢L
 ... | done (V-suc VL)                       =  step (β-suc VL)
 progress (⊢μ ⊢M)                            =  step β-μ
 
+--lists
+progress ⊢emptyL                              =  done V-emptyL
+-- progress (⊢cons ⊢M ⊢N) with progress ⊢M
+-- ...  | step M—→M′                           =  step (ξ-cons M—→M′)
+-- ...  | done VM                              = done (V-∷L VM)
+progress (⊢caseL ⊢L ⊢M ⊢N ⊢W) with progress ⊢L
+... | step L—→L′                            =  step (ξ-caseL L—→L′)
+... | done (V-emptyL)                         =  step β-emptyL
+... | done (V-∷L VL M)                       =  step (β-cons VL) --?? nism zihr
+
 
 postulate
   progress′ : ∀ M {A} → ∅ ⊢ M ⦂ A → Value M ⊎ ∃[ N ](M —→ N)
@@ -98,7 +128,12 @@ ext : ∀ {Γ Δ}
 ext ρ Z           =  Z
 ext ρ (S x≢y ∋x)  =  S x≢y (ρ ∋x)
 
-
+{-
+_Renaming_:
+Let `Γ` and `Δ` be two contexts such that every variable that
+appears in `Γ` also appears with the same type in `Δ`.  Then
+if any term is typeable under `Γ`, it has the same type under `Δ`.
+-}
 rename : ∀ {Γ Δ}
   → (∀ {x A} → Γ ∋ x ⦂ A → Δ ∋ x ⦂ A)
     ----------------------------------
@@ -110,7 +145,15 @@ rename ρ ⊢zero             =  ⊢zero
 rename ρ (⊢suc ⊢M)         =  ⊢suc (rename ρ ⊢M)
 rename ρ (⊢case ⊢L ⊢M ⊢N)  =  ⊢case (rename ρ ⊢L) (rename ρ ⊢M) (rename (ext ρ) ⊢N)
 rename ρ (⊢μ ⊢M)           =  ⊢μ (rename (ext ρ) ⊢M)
+--lists
+rename ρ ⊢emptyL     =  ⊢emptyL
+rename ρ (⊢cons ⊢M ⊢N )   =  ⊢cons (rename ρ ⊢M) (rename ρ ⊢N)
+rename ρ (⊢caseL ⊢L ⊢M ⊢N ⊢V) = ⊢caseL (rename ρ ⊢L) (rename ρ ⊢M) (rename (ext ρ) ⊢N) (rename (ext ρ) ⊢V)
 
+
+--The _weaken_ lemma asserts that a term
+--which is well typed in the empty context is also well typed in an arbitrary
+--context.
 
 weaken : ∀ {Γ M A}
   → ∅ ⊢ M ⦂ A
@@ -124,7 +167,11 @@ weaken {Γ} ⊢M = rename ρ ⊢M
     → Γ ∋ z ⦂ C
   ρ ()
 
-
+{-
+The _drop_ lemma asserts that a term which is well typed in a context
+where the same variable appears twice remains well typed if we drop the shadowed
+occurrence.
+-}
 drop : ∀ {Γ x M A B C}
   → Γ , x ⦂ A , x ⦂ B ⊢ M ⦂ C
     --------------------------
@@ -139,7 +186,10 @@ drop {Γ} {x} {M} {A} {B} {C} ⊢M = rename ρ ⊢M
   ρ (S x≢x Z)         =  ⊥-elim (x≢x refl)
   ρ (S z≢x (S _ ∋z))  =  S z≢x ∋z
 
-
+{-
+The _swap_ lemma asserts that a term which is well typed in a
+context remains well typed if we swap two variables.
+-}
 swap : ∀ {Γ x y M A B C}
   → x ≢ y
   → Γ , y ⦂ B , x ⦂ A ⊢ M ⦂ C
@@ -155,6 +205,13 @@ swap {Γ} {x} {y} {M} {A} {B} {C} x≢y ⊢M = rename ρ ⊢M
   ρ (S z≢x Z)           =  Z
   ρ (S z≢x (S z≢y ∋z))  =  S z≢y (S z≢x ∋z)
 
+{-
+_Substitution_:
+Say we have a closed term `V` of type `A`, and under the
+assumption that `x` has type `A` the term `N` has type `B`.
+Then substituting `V` for `x` in `N` yields a term that
+also has type `B`.
+-}
 
 subst : ∀ {Γ x N V A B}
   → ∅ ⊢ V ⦂ A
@@ -180,6 +237,13 @@ subst {x = y} ⊢V (⊢μ {x = x} ⊢M) with x ≟ y
 ... | yes refl        =  ⊢μ (drop ⊢M)
 ... | no  x≢y         =  ⊢μ (subst ⊢V (swap x≢y ⊢M))
 
+--lists
+subst ⊢V ⊢emptyL        =  ⊢emptyL
+subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N)
+-- subst {x = y} ⊢V (⊢case {x = x} ⊢L ⊢M ⊢N ⊢V ) with x ≟ y
+-- ... | yes refl        =  ⊢case (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N)
+-- ... | no  x≢y         =  ⊢case (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
+
 
 --Preservation
 
@@ -199,6 +263,12 @@ preserve (⊢case ⊢L ⊢M ⊢N)        (ξ-case L—→L′)   =  ⊢case (pre
 preserve (⊢case ⊢zero ⊢M ⊢N)     (β-zero)         =  ⊢M
 preserve (⊢case (⊢suc ⊢V) ⊢M ⊢N) (β-suc VV)       =  subst ⊢V ⊢N
 preserve (⊢μ ⊢M)                 (β-μ)            =  subst (⊢μ ⊢M) ⊢M
+--lists
+preserve ⊢emptyL                  ()
+preserve (⊢cons ⊢M ⊢N)               (ξ-cons M—→M′)    =  ⊢cons (preserve ⊢M M—→M′) (preserve ⊢N M—→M′)
+-- preserve (⊢case ⊢L ⊢M ⊢N)        (ξ-case L—→L′)   =  ⊢case (preserve ⊢L L—→L′) ⊢M ⊢N
+-- preserve (⊢case ⊢zero ⊢M ⊢N)     (β-zero)         =  ⊢M
+-- preserve (⊢case (⊢suc ⊢V) ⊢M ⊢N) (β-suc VV)       =  subst ⊢V ⊢N
 
 
 --Evaluation

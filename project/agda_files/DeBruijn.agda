@@ -688,8 +688,8 @@ progress (` N ∷L M) with progress N -- tuki in progress N ker je N in A
 -- progress (caseL L M N O) with progress L
 -- ...    | step L—→L′                     =  step (ξ-caseL L—→L′)
 -- ...    | done V-emptyL                    =  step (β-emptyL)
--- ...    | done (V-cons VL M)                =  step (β-cons VL M)   
---tose ne dela
+-- ...    | done (V-cons VL M)                =  step (β-cons VL)   
+-- --tose ne dela
 
 
 
