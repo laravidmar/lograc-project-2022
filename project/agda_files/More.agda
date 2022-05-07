@@ -6,9 +6,6 @@ open import Data.Empty using (⊥; ⊥-elim)
 open import Data.Nat using (ℕ; zero; suc; _*_; _<_; _≤?_; z≤n; s≤s)
 open import Relation.Nullary using (¬_)
 open import Relation.Nullary.Decidable using (True; toWitness)
-
-data Term : Set where
-  `_∷L_                      : Term → Term  → Term 
   
  
 
@@ -24,7 +21,7 @@ infix  5 μ_
 infixl 7 _·_
 infixl 8 _`*_
 infix  8 `suc_
-infixl 9 `_∷L_
+--infixl 9 `_∷L_
 infix  9 `_
 infix  9 S_
 infix  9 #_
@@ -33,7 +30,7 @@ infix  9 #_
 
 data Type : Set where
   `ℕ    : Type
-  `List : Type
+ -- `List : Type
   _⇒_   : Type → Type → Type
   Nat   : Type
   _`×_  : Type → Type → Type
@@ -96,23 +93,23 @@ data _⊢_ : Context → Type → Set where
 
 --lists
 
-  `emptyL : ∀ {Γ}
-      ------
-    → Γ ⊢ `List
+  -- `emptyL : ∀ {Γ}
+  --     ------
+  --   → Γ ⊢ `List
 
-  ` _∷L_ : ∀ {Γ}
-    → Γ ⊢ `List
-    → Γ ⊢ `List
-      ------
-    → Γ ⊢ `List
+  -- ` _∷L_ : ∀ {Γ}
+  --   → Γ ⊢ `List
+  --   → Γ ⊢ `List
+  --     ------
+  --   → Γ ⊢ `List
 
-  caseL : ∀ {Γ A}
-    → Γ ⊢ `List
-    → Γ ⊢ A
-    → Γ , `List ⊢ A
-    → Γ , `List ⊢ A
-      -----
-    → Γ ⊢ A
+  -- caseL : ∀ {Γ A}
+  --   → Γ ⊢ `List
+  --   → Γ ⊢ A
+  --   → Γ , `List ⊢ A
+  --   → Γ , `List ⊢ A
+  --     -----
+  --   → Γ ⊢ A
 
 -- fixpoint
 
@@ -129,10 +126,10 @@ data _⊢_ : Context → Type → Set where
     → Γ ⊢ Nat
 
   
-  conL : ∀ {Γ}
-    → List
-      -------
-    → Γ ⊢ Nat
+  -- conL : ∀ {Γ}
+  --   → List
+  --     -------
+  --   → Γ ⊢ Nat
 
   _`*_ : ∀ {Γ}
     → Γ ⊢ Nat
@@ -222,9 +219,9 @@ rename ρ (`zero)        =  `zero
 rename ρ (`suc M)       =  `suc (rename ρ M)
 rename ρ (case L M N)   =  case (rename ρ L) (rename ρ M) (rename (ext ρ) N)
 
-rename ρ (`emptyL)        =  `emptyL
-rename ρ (`N ∷L M)       =  `(rename ρ N) ∷L (rename ρ M)
-rename ρ (caseL L M N N') = caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
+-- rename ρ (`emptyL)        =  `emptyL
+-- rename ρ (`N ∷L M)       =  `(rename ρ N) ∷L (rename ρ M)
+-- rename ρ (caseL L M N N') = caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
 
 
 rename ρ (μ N)          =  μ (rename (ext ρ) N)
@@ -252,9 +249,9 @@ subst σ (`zero)        =  `zero
 subst σ (`suc M)       =  `suc (subst σ M)
 subst σ (case L M N)   =  case (subst σ L) (subst σ M) (subst (exts σ) N)
 
-subst σ (`emptyL)        =  `emptyL
-subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
-subst σ (caseL L M N N')   =  caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
+-- subst σ (`emptyL)        =  `emptyL
+-- subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
+-- subst σ (caseL L M N N')   =  caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
 
 subst σ (μ N)          =  μ (subst (exts σ) N)
 subst σ (con n)        =  con n
@@ -334,17 +331,6 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
     → Value W
       ----------------
     → Value `⟨ V , W ⟩
-
-
-
-
-
-
-
-
-
-
-
 
 
 

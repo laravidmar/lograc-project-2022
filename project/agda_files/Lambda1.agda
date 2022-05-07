@@ -121,7 +121,7 @@ data Value : Term → Set where
 
   V-∷L : ∀ {V} {A}   -- ?? 
     → Value V
-    → Value A 
+  --  → Value A 
     -------------------
     → Value (` V ∷L A)
 
@@ -250,7 +250,7 @@ data _—→_ : Term → Term → Set where
 
   --Lists
 
-  ξ-cons : ∀ {N  M N′}
+  ξ-cons : ∀ {N N′ M }
       --→ M —→ M′
       → N —→ N′ 
         ------------------
@@ -556,7 +556,7 @@ data _⊢_⦂_ : Context → Term → Type → Set where
   -- L-I₂
   ⊢cons : ∀ {Γ L M }
     → Γ ⊢ L ⦂ `List
-    → Γ ⊢ M ⦂ `List-- Ali je to Γ ⊢ M ⦂ A?
+    → Γ ⊢ M ⦂ `List -- Ali je to Γ ⊢ M ⦂ A?
       ---------------
     → Γ ⊢ ` M ∷L L ⦂ `List
 

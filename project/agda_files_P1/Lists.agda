@@ -12,7 +12,12 @@ open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_�
 open import Function using (_∘_)
 open import Level using (Level)
 open import agda_files_P1.Isomorphism using (_≃_; _⇔_)
+{-
+Lambda, Properties, DeBruijn, More, Bisimulation
+Inference, Untyped, Confluence, BigStep: 
 
+
+-}
 
 data List (A : Set) : Set where
   []  : List A

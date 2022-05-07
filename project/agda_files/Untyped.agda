@@ -26,7 +26,10 @@ infix  6  ′_
 infixl 7  _·_
 
 
-
+{-
+save that every term will have exactly the same type, written `★`
+and pronounced "any".
+-}
 data Type : Set where
   ★ : Type
 
@@ -435,12 +438,6 @@ _ = refl
 
 
 
-
-
-
-
-
-
 `zero : ∀ {Γ} → (Γ ⊢ ★)
 `zero = ƛ ƛ (# 0)
 
@@ -450,7 +447,9 @@ _ = refl
 case : ∀ {Γ} → (Γ ⊢ ★) → (Γ ⊢ ★) → (Γ , ★ ⊢ ★)  → (Γ ⊢ ★)
 case L M N = L · (ƛ N) · M
 
-
+--lists
+-- `emptyL : ∀ {Γ} → (Γ ⊢ ★)
+-- `emptyL = ƛ ƛ (# [])
 
 
 

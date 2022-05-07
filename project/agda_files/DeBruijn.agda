@@ -453,7 +453,7 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
 
   V-cons : ∀ {Γ} {V : Γ ⊢ `List} {W : Γ ⊢ `List}
     → Value V --value for head
-    → Value W --value for tail
+    -- → Value W --value for tail
       --------------
     → Value (` V ∷L W)
 
@@ -513,11 +513,11 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       ----------------
     → μ N —→ N [ μ N ]
 
-  ξ-cons : ∀ {Γ} {M M′ : Γ ⊢ `List} {N N′ : Γ ⊢ `List} -- zmanjsamo izraz
+  ξ-cons : ∀ {Γ} {M M′ : Γ ⊢ `List} {N : Γ ⊢ `List} -- zmanjsamo izraz
     → M —→ M′
-    → N —→ N′
+    --→ N —→ N′
       -----------------
-    → ` M ∷L N —→ ` M′ ∷L N′
+    → ` M ∷L N —→ ` M′ ∷L N
 
   ξ-caseL : ∀ {Γ A} {L L′ : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A}  {W : Γ , `List ⊢ A}
     → L —→ L′
@@ -528,10 +528,10 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       -------------------
     → caseL `emptyL M N W —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
 
-  -- β-cons : ∀ {Γ A} {V : Γ ⊢ `List} {W : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {N' : Γ , `List ⊢ A}  
-  --   → Value V
-  --     ----------------------------
-  --   → caseL (` V ∷L W) M N' N —→ N [ V ] 
+  β-cons : ∀ {Γ A} {V : Γ ⊢ `List} {W : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {N' : Γ , `List ⊢ A}  
+    → Value V
+      ----------------------------
+    → caseL (` V ∷L W) M N' N —→ N [ V ] 
 
 
 
@@ -681,14 +681,13 @@ progress (case L M N) with progress L
 ...    | done (V-suc VL)                =  step (β-suc VL)
 progress (μ N)                          =  step (β-μ)
 progress (`emptyL)                        =  done V-emptyL
-progress (` N ∷L M) with progress N -- tuki in progress N ker je N in A 
-...    | done VN                      = done (V-cons VN M )
--- ...    | step N—→N′ with progress N 
--- ...         | step M—→M′               =  step (ξ-cons N—→N′  M—→M′)   
--- progress (caseL L M N O) with progress L
--- ...    | step L—→L′                     =  step (ξ-caseL L—→L′)
--- ...    | done V-emptyL                    =  step (β-emptyL)
--- ...    | done (V-cons VL M)                =  step (β-cons VL)   
+-- progress (` M ∷L N) with progress M -- tuki in progress N ker je N in A 
+-- ...    | step M—→M′                   =  step (ξ-cons M—→M′) 
+-- ...    | done VM                      = done (V-cons VM )  
+progress (caseL L M N O) with progress L
+...    | step L—→L′                     =  step (ξ-caseL L—→L′)
+...    | done V-emptyL                    =  step (β-emptyL)
+...    | done (V-cons VL)                =  step (β-cons VL)   
 -- --tose ne dela
 
 
