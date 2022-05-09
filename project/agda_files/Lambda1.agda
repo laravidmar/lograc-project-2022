@@ -74,8 +74,6 @@ var? _      =  false
 ƛ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
 ƛ′_⇒_ (` x) N = ƛ x ⇒ N
 
--- ′_ƛ′_⇒_ : (t : Term) →  {_ : T (var? t)} → (t₁ : Term ) → {_ : T (var? t₁)} → Term → Term
--- ′_ƛ′_⇒_ (` x) N (` x')= x ƛ x' ⇒ N
 
 case′_[zero⇒_|suc_⇒_] : Term → Term → (t : Term) → {_ : T (var? t)} → Term → Term
 case′ L [zero⇒ M |suc (` x) ⇒ N ]  =  case L [zero⇒ M |suc x ⇒ N ]
@@ -119,9 +117,9 @@ data Value : Term → Set where
     -------------
     Value `emptyL
 
-  V-∷L : ∀ {V} {A}   -- ?? 
+  V-∷L : ∀ {V} {A}   
     → Value V
-  --  → Value A 
+    → Value A 
     -------------------
     → Value (` V ∷L A)
 
@@ -251,10 +249,15 @@ data _—→_ : Term → Term → Set where
   --Lists
 
   ξ-cons : ∀ {N N′ M }
-      --→ M —→ M′
       → N —→ N′ 
         ------------------
       → ` N ∷L M —→ ` N′ ∷L M
+
+  ξ-cons₂ : ∀ {N M′ M }
+    → Value N
+    → M —→ M′ 
+      ------------------
+    → ` N ∷L M —→ ` N ∷L M′
 
 
   ξ-caseL : ∀ {x  y L L′ M N}
@@ -269,7 +272,7 @@ data _—→_ : Term → Term → Set where
   β-cons : ∀ {x y V W M N}
     → Value V --imamo vrednost V se pravi seznma ni prazn in gre v drugi if stavek
       ---------------------------------------------------
-    → caseL ` V ∷L W [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ N [ x := V ]
+    → caseL ` V ∷L W [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ N [ x := V ] [ y := W ]
 
 
 infix  2 _—↠_
@@ -458,7 +461,7 @@ infixr 7 _⇒_
 data Type : Set where
   _⇒_ : Type → Type → Type
   `ℕ : Type
-  `List :  Type
+  `List :  Type → Type
 
 {-
 We write `∅` for the empty context, and `Γ , x ⦂ A`
@@ -549,25 +552,25 @@ data _⊢_⦂_ : Context → Term → Type → Set where
     → Γ ⊢ μ x ⇒ M ⦂ A
 
   -- -- List-I₁
-  ⊢emptyL : ∀ {Γ}
+  ⊢emptyL : ∀ {Γ A}
       --------------
-    → Γ ⊢ `emptyL ⦂ `List
+    → Γ ⊢ `emptyL ⦂ `List A
 
   -- L-I₂
-  ⊢cons : ∀ {Γ L M }
-    → Γ ⊢ L ⦂ `List
-    → Γ ⊢ M ⦂ `List -- Ali je to Γ ⊢ M ⦂ A?
+  ⊢cons : ∀ {Γ L M A}
+    → Γ ⊢ L ⦂ `List A
+    → Γ ⊢ M ⦂ A -- head needs to be some element in A
       ---------------
-    → Γ ⊢ ` M ∷L L ⦂ `List
+    → Γ ⊢ ` M ∷L L ⦂ `List A
 
   -- -- ℕ-E
-  ⊢caseL : ∀ {Γ L M x y N A}
-    → Γ ⊢ L ⦂ `List
-    → Γ ⊢ M ⦂ A
-    → Γ , x ⦂ `List ⊢ N ⦂ A
-    → Γ , y ⦂ `List ⊢ N ⦂ A
+  ⊢caseL : ∀ {Γ L M x y N A B}
+    → Γ ⊢ L ⦂ `List A
+    → Γ ⊢ M ⦂ B
+    → Γ , x ⦂ A ⊢ N ⦂ B
+    → Γ , y ⦂ `List A ⊢ N ⦂ B
       -------------------------------------
-    → Γ ⊢ caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ] ⦂ A
+    → Γ ⊢ caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ] ⦂ B
 
 
 Ch : Type → Type
@@ -638,10 +641,4 @@ nope₂ (⊢ƛ (⊢` ∋x · ⊢` ∋x′))  =  contradiction (∋-functional �
 
 
 
--- Narjena (Zgleda vse kul, Bravo Lara <3)
-
-
-
--- Questions:
--- Do we need 2 Values at 122
--- And something simillar at 253
+-- Narjena 

@@ -24,8 +24,9 @@ V¬—→ V-ƛ        ()
 V¬—→ V-zero     ()
 V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 V¬—→ V-emptyL     ()
-V¬—→ (V-∷L VM) (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
+V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
+--V¬—→ (V-∷L VM VW) (ξ-cons₂ VM' W—→N) = V¬—→ VM W—→N 
 
 
 --terms that reduce are not values:
@@ -54,15 +55,15 @@ data Canonical_⦂_ : Term → Type → Set where
       ---------------------
     → Canonical `suc V ⦂ `ℕ
 
-  C-emptyL :
+  C-emptyL : ∀ {A}
       --------------------
-      Canonical `emptyL ⦂ `List
+    → Canonical `emptyL ⦂ `List A
 
-  C-cons : ∀ {V W}
-    → Canonical V ⦂ `List
-    → Canonical W ⦂ `List
+  C-cons : ∀ {V W A}
+    → Canonical V ⦂ `List A
+    → Canonical W ⦂ `List A
       ---------------------
-    → Canonical ` V ∷L W ⦂ `List
+    → Canonical ` V ∷L W ⦂ `List A
 
 --_Progress_: If `∅ ⊢ M ⦂ A` then either `M` is a value or there is an `N` such
 --that `M —→ N`.
@@ -111,11 +112,11 @@ progress (⊢μ ⊢M)                            =  step β-μ
 progress ⊢emptyL                              =  done V-emptyL
 -- progress (⊢cons ⊢M ⊢N) with progress ⊢M
 -- ...  | step M—→M′                           =  step (ξ-cons M—→M′)
--- ...  | done VM                              = done (V-∷L VM)
+-- ...  | done VM VN                            = done (V-∷L VM VN)
 progress (⊢caseL ⊢L ⊢M ⊢N ⊢W) with progress ⊢L
 ... | step L—→L′                            =  step (ξ-caseL L—→L′)
 ... | done (V-emptyL)                         =  step β-emptyL
-... | done (V-∷L VL)                       =  step (β-cons VL) --?? nism zihr
+... | done (V-∷L VL VL')                       =  step (β-cons VL)
 
 
 postulate
@@ -149,6 +150,7 @@ rename ρ (⊢μ ⊢M)           =  ⊢μ (rename (ext ρ) ⊢M)
 --lists
 rename ρ ⊢emptyL     =  ⊢emptyL
 rename ρ (⊢cons ⊢M ⊢N )   =  ⊢cons (rename ρ ⊢M) (rename ρ ⊢N)
+--rename ρ (⊢cons₂ ⊢M ⊢N )   =  ⊢cons (rename ρ ⊢M) (rename ρ ⊢N)
 rename ρ (⊢caseL ⊢L ⊢M ⊢N ⊢V) = ⊢caseL (rename ρ ⊢L) (rename ρ ⊢M) (rename (ext ρ) ⊢N) (rename (ext ρ) ⊢V)
 
 
@@ -697,12 +699,4 @@ det (β-cons _)      (β-cons _)        =  refl
 
 
 
--- Narejena (Treba popravit par stvari)
-
-
--- 248 Subst implicit argument doesnt work 
-
-
--- preserve 266 
-
--- progress 92 
+-- Narejena 30% (Treba popravit par stvari)

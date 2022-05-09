@@ -65,8 +65,7 @@ infix  9 #_
 data Type : Set where
   _⇒_ : Type → Type → Type
   `ℕ  : Type
-  `List :  Type --add a type list 
-
+  `List :  Type → Type --add a type list 
 -- 4. Contexts
 
 {-
@@ -159,23 +158,23 @@ data _⊢_ : Context → Type → Set where
       ---------
     → Γ ⊢ A
   
-  `emptyL : ∀ {Γ}
+  `emptyL : ∀ {Γ A}
       ---------
-    → Γ ⊢ `List
+    → Γ ⊢ `List A 
 
   `_∷L_ : ∀ {Γ A}
     → Γ ⊢ A  --haed is in list... one element 
-    → Γ ⊢ `List --tail is in list
+    → Γ ⊢ `List A --tail is in list
       ------
-    → Γ ⊢ `List -- sedi constructer in list
+    → Γ ⊢ `List A -- sedi constructer in list
 
-  caseL : ∀ {Γ A}
-    → Γ ⊢ `List  
-    → Γ ⊢ A
-    → Γ , `List  ⊢ A  --tail  is in list
-    → Γ , `List  ⊢ A  -- head is in list
+  caseL : ∀ {Γ A B}
+    → Γ ⊢ `List A
+    → Γ ⊢ B
+    → Γ , A  ⊢ B  --tail  is in list
+    → Γ , `List A ⊢ B  -- head is in list
       ----------
-    → Γ ⊢ A --Bool ?
+    → Γ ⊢ B 
 
 
 --DO WE NEED TO ADD HEAD AND TAIL OD THE LIST 
@@ -303,7 +302,7 @@ ext ρ (S x)  =  S (ρ x)
 
 
 
-rename : ∀ {Γ Δ}
+rename : ∀ {Γ Δ }
   → (∀ {A} → Γ ∋ A → Δ ∋ A)
     -----------------------
   → (∀ {A} → Γ ⊢ A → Δ ⊢ A)
@@ -447,15 +446,15 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
       --------------
     → Value (`suc V)
 
-  V-emptyL : ∀ {Γ}
+  V-emptyL : ∀ {Γ A} 
       -----------------
-    → Value (`emptyL {Γ})
+    → Value (`emptyL {Γ} {A}) -- dodala argument A ki nič ne nardi sam ga pa rabi
 
-  V-cons : ∀ {Γ} {V : Γ ⊢ `List} {W : Γ ⊢ `List}
+  V-cons : ∀ {Γ A} {V : Γ ⊢ A} {W : Γ ⊢ `List A}
     → Value V --value for head
-    -- → Value W --value for tail
+    → Value W --value for tail
       --------------
-    → Value (` V ∷L W)
+    → Value (` V ∷L W )
 
 
 
@@ -513,25 +512,33 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       ----------------
     → μ N —→ N [ μ N ]
 
-  ξ-cons : ∀ {Γ} {M M′ : Γ ⊢ `List} {N : Γ ⊢ `List} -- zmanjsamo izraz
+
+--lists
+
+  ξ-cons : ∀ {Γ A} {M M′ : Γ ⊢ A} {N : Γ ⊢ `List A} -- redukcija na prvi izraz
     → M —→ M′
-    --→ N —→ N′
       -----------------
     → ` M ∷L N —→ ` M′ ∷L N
 
-  ξ-caseL : ∀ {Γ A} {L L′ : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A}  {W : Γ , `List ⊢ A}
+  ξ-cons₂ : ∀ {Γ A} {M : Γ ⊢ A} {N N′ : Γ ⊢ `List A} -- redukcija na prvi izraz je narejena je value naredimo še redukcijo na 2 
+    → Value M
+    → N —→ N′
+      -----------------
+    → ` M ∷L N —→ ` M ∷L N′
+
+  ξ-caseL : ∀ {Γ A B} {L L′ : Γ ⊢ `List A } {M : Γ ⊢ B} {N : Γ , A ⊢ B}  {W : Γ , `List A ⊢ B}
     → L —→ L′
       -------------------------
     → caseL L M N W —→ caseL L′ M N W
 
-  β-emptyL :  ∀ {Γ A} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {W : Γ , `List ⊢ A}
+  β-emptyL :  ∀ {Γ A B} {M : Γ ⊢ B} {N : Γ , A ⊢ B} {W : Γ , `List A ⊢ B}
       -------------------
-    → caseL `emptyL M N W —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
+    → caseL (`emptyL) M N W —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
 
-  β-cons : ∀ {Γ A} {V : Γ ⊢ `List} {W : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , `List ⊢ A} {N' : Γ , `List ⊢ A}  
+  β-cons : ∀ {Γ A} {V : Γ ⊢ A} {W : Γ ⊢ `List A} {M : Γ ⊢ A} {N : Γ , `List A ⊢ A} {N' : Γ , `List A ⊢ A}  
     → Value V
       ----------------------------
-    → caseL (` V ∷L W) M N' N —→ N [ V ] 
+    → caseL (` V ∷L W) M N N' —→ N' [ V ] -- [ W ] isto kot v more, mora bit ampak ne dela z njim
 
 
 
