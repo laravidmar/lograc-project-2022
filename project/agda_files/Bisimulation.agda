@@ -19,7 +19,10 @@ open import agda_files.Lambda1
 
 
 
-
+--We are particularly interested in the situation where there is also
+---a simulation from the target to the source: every reduction in the
+--target has a corresponding reduction sequence in the source.  This
+--situation is called a _bisimulation_.
 
 
 
@@ -29,6 +32,11 @@ open import agda_files.Lambda1
 infix  4 _~_
 infix  5 ~ƛ_
 infix  7 _~·_
+
+--## Simulation
+
+--The simulation is a straightforward formalisation of the rules
+--in the introduction:
 
 data _~_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
 
@@ -171,4 +179,4 @@ sim (~let ~V ~N)    (β-let VV)      =  leg (~sub ~N ~V)  (β-ƛ (~val ~V VV))
 
 
 
--- Narjena (Mislim da ni treba nič popravit)
+-- Narjena (Ni treba nič popravit)

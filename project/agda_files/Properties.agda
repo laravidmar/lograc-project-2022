@@ -698,3 +698,11 @@ det (β-cons _)      (β-cons _)        =  refl
 
 
 -- Narejena (Treba popravit par stvari)
+
+
+-- 248 Subst implicit argument doesnt work 
+
+
+-- preserve 266 
+
+-- progress 92 

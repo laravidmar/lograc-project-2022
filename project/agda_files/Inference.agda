@@ -55,8 +55,12 @@ data Term⁻ where
   μ_⇒_                     : Id → Term⁻ → Term⁻
   _↑                       : Term⁺ → Term⁻
 
+  `emptyL                  : Term⁻
+  `_∷L_                    : Term⁻ → Term⁻  → Term⁻
+  caseL_[emptyL⇒_∣_∷L_⇒_]  : Term⁺ → Term⁻ → Id → Id → Term⁻ → Term⁻
 
 
+-- Example
 two : Term⁻
 two = `suc (`suc `zero)
 
@@ -87,6 +91,11 @@ sucᶜ = ƛ "x" ⇒ `suc (` "x" ↑)
 2+2ᶜ : Term⁺
 2+2ᶜ = plusᶜ · twoᶜ · twoᶜ · sucᶜ · `zero
 
+
+
+
+
+-- Bidirectional type checking
 
 data _∋_⦂_ : Context → Id → Type → Set where
 
