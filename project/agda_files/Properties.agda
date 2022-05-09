@@ -682,3 +682,19 @@ det β-emptyL         (ξ-caseL M—→M″)   =  ⊥-elim (V¬—→ V-emptyL M
 det β-emptyL         β-emptyL           =  refl
 det (β-cons VL)     (ξ-caseL L—→L″)   =  ⊥-elim (V¬—→ (V-∷L VL) L—→L″)
 det (β-cons _)      (β-cons _)        =  refl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Narejena (Treba popravit par stvari)

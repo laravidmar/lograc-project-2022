@@ -184,3 +184,17 @@ cbn→reduce {M}{Δ}{δ}{N′} M⇓c
     with ⇓→—↠×≈{σ = ids} M⇓c ≈ₑ-id
 ... | ⟨ N , ⟨ rs , ⟨ σ , ⟨ h , eq2 ⟩ ⟩ ⟩ ⟩ rewrite sub-id{M = M} | eq2 =
       ⟨ subst (exts σ) N′ , rs ⟩
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Narjena (Nič ni treba tu nardit)

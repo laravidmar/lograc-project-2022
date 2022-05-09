@@ -984,3 +984,19 @@ _ : eval (gas 100) (plusᶜ · twoᶜ · twoᶜ · sucᶜ · `zero) ≡
    ∎)
    (done (V-suc (V-suc (V-suc (V-suc V-zero)))))
 _ = refl  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Narjen (manjka sam 667 vrstica)

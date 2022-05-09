@@ -777,3 +777,20 @@ sucᶜ = ƛ `suc (# 0)
 2+2ᶜ : ∀ {Γ} → Γ ⊢ `ℕ
 2+2ᶜ = plusᶜ · twoᶜ · twoᶜ · sucᶜ · `zero
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Začela delat ni končano

@@ -544,3 +544,14 @@ abs-cong : ∀ {Γ} {N N' : Γ , ★ ⊢ ★}
          → ƛ N —↠ ƛ N'
 abs-cong (M ∎) = ƛ M ∎
 abs-cong (L —→⟨ r ⟩ rs) = ƛ L —→⟨ ζ r ⟩ abs-cong rs
+
+
+
+
+
+
+
+
+
+
+-- Nisma fix sam sma rekla zadnič da mnda ni nič za popravit

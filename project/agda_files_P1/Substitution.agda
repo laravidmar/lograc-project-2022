@@ -741,3 +741,18 @@ substitution : ∀{Γ}{M : Γ , ★ , ★ ⊢ ★}{N : Γ , ★ ⊢ ★}{L : Γ 
     → (M [ N ]) [ L ] ≡ (M 〔 L 〕) [ (N [ L ]) ]
 substitution{M = M}{N = N}{L = L} =
    sym (subst-commute{N = M}{M = N}{σ = subst-zero L})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Mislim da ni treba nič delat tu

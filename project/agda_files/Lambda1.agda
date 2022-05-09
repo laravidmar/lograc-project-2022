@@ -38,7 +38,7 @@ data Term : Set where
   caseL_[emptyL⇒_∣_∷L_⇒_]   : Term → Term → Id  →  Id →  Term → Term
 
 
---We added the constructer of lists so emptyL = [] and _::_ is adding to a list and case_blablabla is checking if list is empty or element is in there
+--We added the constructor of lists so emptyL = [] and _::_ is adding to a list and case_blablabla is checking if list is empty or element is in there
 
 
 
@@ -629,3 +629,19 @@ nope₂ (⊢ƛ (⊢` ∋x · ⊢` ∋x′))  =  contradiction (∋-functional �
   where
   contradiction : ∀ {A B} → ¬ (A ⇒ B ≡ A)
   contradiction ()
+
+
+
+
+
+
+
+
+
+-- Narjena (Zgleda vse kul, Bravo Lara <3)
+
+
+
+-- Questions:
+-- Do we need 2 Values at 122
+-- And something simillar at 253

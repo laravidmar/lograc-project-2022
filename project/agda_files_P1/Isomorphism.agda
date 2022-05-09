@@ -258,3 +258,9 @@ record _⇔_ (A B : Set) : Set where
 import Function using (_∘_)
 import Function.Inverse using (_↔_)
 import Function.LeftInverse using (_↞_)
+
+
+
+
+
+-- Js bi reku da tu ni treba nič 

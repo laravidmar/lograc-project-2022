@@ -157,3 +157,18 @@ sim (~let ~M ~N)    (ξ-let M—→)
 sim (~let ~V ~N)    (β-let VV)      =  leg (~sub ~N ~V)  (β-ƛ (~val ~V VV))
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Narjena (Mislim da ni treba nič popravit)

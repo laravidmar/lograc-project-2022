@@ -324,3 +324,14 @@ confluence L↠M₁ L↠M₂
 ... | ⟨ N , ⟨ M₁⇛N , M₂⇛N ⟩ ⟩ =
       ⟨ N , ⟨ pars-betas M₁⇛N , pars-betas M₂⇛N ⟩ ⟩
 
+
+
+
+
+
+
+
+
+
+-- Narjena (Mislim da ni treba nič spremenit)
+

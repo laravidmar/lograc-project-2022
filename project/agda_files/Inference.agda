@@ -452,3 +452,12 @@ _ = refl
 _ : ∥ ⊢2+2ᶜ ∥⁺ ≡ DB.2+2ᶜ
 _ = refl
 
+
+
+
+
+
+
+
+
+-- To je še treba nardit
