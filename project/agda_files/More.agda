@@ -19,22 +19,28 @@ infixr 9 _`×_
 infix  5 ƛ_
 infix  5 μ_
 infixl 7 _·_
-infixl 8 _`*_
+infixl 8 _`*_ --multiplication for natual numbers
 infix  8 `suc_
---infixl 9 `_∷L_
+infix 8 `[]
+infixl 9 `_∷L_
+infixl 9 `caseL
 infix  9 `_
 infix  9 S_
 infix  9 #_
 
-
+{-
+We define a `Nat` type equivalent to the built-in natural number type
+with multiplication as a primitive operation on numbers:
+-}
 
 data Type : Set where
   `ℕ    : Type
- -- `List : Type
+  `List : Type
   _⇒_   : Type → Type → Type
   Nat   : Type
   _`×_  : Type → Type → Type
 
+--veriables and the lockup judment
 data Context : Set where
   ∅   : Context
   _,_ : Context → Type → Context
@@ -50,7 +56,7 @@ data _∋_ : Context → Type → Set where
       ---------
     → Γ , A ∋ B
 
-
+--Terms and the typing judgment
 data _⊢_ : Context → Type → Set where
 
 -- variables
@@ -91,25 +97,6 @@ data _⊢_ : Context → Type → Set where
       -----
     → Γ ⊢ A
 
---lists
-
-  -- `emptyL : ∀ {Γ}
-  --     ------
-  --   → Γ ⊢ `List
-
-  -- ` _∷L_ : ∀ {Γ}
-  --   → Γ ⊢ `List
-  --   → Γ ⊢ `List
-  --     ------
-  --   → Γ ⊢ `List
-
-  -- caseL : ∀ {Γ A}
-  --   → Γ ⊢ `List
-  --   → Γ ⊢ A
-  --   → Γ , `List ⊢ A
-  --   → Γ , `List ⊢ A
-  --     -----
-  --   → Γ ⊢ A
 
 -- fixpoint
 
@@ -124,12 +111,6 @@ data _⊢_ : Context → Type → Set where
     → ℕ
       -------
     → Γ ⊢ Nat
-
-  
-  -- conL : ∀ {Γ}
-  --   → List
-  --     -------
-  --   → Γ ⊢ Nat
 
   _`*_ : ∀ {Γ}
     → Γ ⊢ Nat
@@ -171,7 +152,28 @@ data _⊢_ : Context → Type → Set where
       --------------
     → Γ ⊢ C
 
+  --lists
 
+  `[] : ∀ {Γ}
+      ------
+    → Γ ⊢ `List
+
+  `_∷L_ : ∀ {Γ A}
+    → Γ ⊢ A
+    → Γ ⊢ `List
+      ------
+    → Γ ⊢ `List
+
+  `caseL : ∀ {Γ A}
+    → Γ ⊢ `List
+    → Γ ⊢ A
+    → Γ , A ⊢ A
+    → Γ , `List ⊢ A
+      -----
+    → Γ ⊢ A
+
+
+--Abbreviating de Bruijn indices
 
 
 length : Context → ℕ
@@ -193,13 +195,7 @@ count {Γ , _} {(suc n)} (s≤s p)    =  S (count p)
   → Γ ⊢ lookup (toWitness n∈Γ)
 #_ n {n∈Γ}  =  ` count (toWitness n∈Γ)
 
-
-
-
-
-
-
-
+--Renaming
 
 ext : ∀ {Γ Δ}
   → (∀ {A}   →     Γ ∋ A →     Δ ∋ A)
@@ -218,12 +214,6 @@ rename ρ (L · M)        =  (rename ρ L) · (rename ρ M)
 rename ρ (`zero)        =  `zero
 rename ρ (`suc M)       =  `suc (rename ρ M)
 rename ρ (case L M N)   =  case (rename ρ L) (rename ρ M) (rename (ext ρ) N)
-
--- rename ρ (`emptyL)        =  `emptyL
--- rename ρ (`N ∷L M)       =  `(rename ρ N) ∷L (rename ρ M)
--- rename ρ (caseL L M N N') = caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
-
-
 rename ρ (μ N)          =  μ (rename (ext ρ) N)
 rename ρ (con n)        =  con n
 rename ρ (M `* N)       =  rename ρ M `* rename ρ N
@@ -233,9 +223,14 @@ rename ρ (`proj₁ L)     =  `proj₁ (rename ρ L)
 rename ρ (`proj₂ L)     =  `proj₂ (rename ρ L)
 rename ρ (case× L M)    =  case× (rename ρ L) (rename (ext (ext ρ)) M)
 
+--lists
+rename ρ (`[])        =  `[]
+rename ρ (` N ∷L M)       =  ` (rename ρ N) ∷L (rename ρ M)
+rename ρ (`caseL L M N N') = `caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
 
 
 
+--Simultaneous Substitution
 
 exts : ∀ {Γ Δ} → (∀ {A} → Γ ∋ A → Δ ⊢ A) → (∀ {A B} → Γ , A ∋ B → Δ , A ⊢ B)
 exts σ Z      =  ` Z
@@ -248,11 +243,6 @@ subst σ (L · M)        =  (subst σ L) · (subst σ M)
 subst σ (`zero)        =  `zero
 subst σ (`suc M)       =  `suc (subst σ M)
 subst σ (case L M N)   =  case (subst σ L) (subst σ M) (subst (exts σ) N)
-
--- subst σ (`emptyL)        =  `emptyL
--- subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
--- subst σ (caseL L M N N')   =  caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
-
 subst σ (μ N)          =  μ (subst (exts σ) N)
 subst σ (con n)        =  con n
 subst σ (M `* N)       =  subst σ M `* subst σ N
@@ -261,11 +251,15 @@ subst σ `⟨ M , N ⟩     =  `⟨ subst σ M , subst σ N ⟩
 subst σ (`proj₁ L)     =  `proj₁ (subst σ L)
 subst σ (`proj₂ L)     =  `proj₂ (subst σ L)
 subst σ (case× L M)    =  case× (subst σ L) (subst (exts (exts σ)) M)
+--lists
+subst σ (`[])        =  `[]
+subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
+subst σ (`caseL L M N N')   =  `caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
 
 
 
 
-
+--Single and double substitution
 
 substZero : ∀ {Γ}{A B} → Γ ⊢ A → Γ , A ∋ B → Γ ⊢ B
 substZero V Z      =  V
@@ -292,12 +286,7 @@ _[_][_] {Γ} {A} {B} N V W =  subst {Γ , A , B} {Γ} σ N
   σ (S (S x))  =  ` x
 
 
-
-
-
-
-
-
+--Values
 
 data Value : ∀ {Γ A} → Γ ⊢ A → Set where
 
@@ -332,10 +321,22 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
       ----------------
     → Value `⟨ V , W ⟩
 
+--lists 
+
+  V-[] : ∀ {Γ} 
+      -----------------
+    → Value (`[] {Γ})
+
+  V-cons : ∀ {Γ} {V : Γ ⊢ `List} {W : Γ ⊢ `List}
+    → Value V
+    → Value W
+      --------------
+    → Value (` V ∷L W)
 
 
 
 
+--reduction
 
 infix 2 _—→_
 
@@ -463,12 +464,32 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       ----------------------------------
     → case× `⟨ V , W ⟩ M —→ M [ V ][ W ]
 
+--lists 
+  ξ-∷₁ : ∀ {Γ} {N M M′ : Γ ⊢ `List}
+    → M —→ M′
+      -----------------
+    → ` M ∷L N —→ ` M′ ∷L N
 
+  ξ-∷₂ : ∀ {Γ} {N M M′ : Γ ⊢ `List}
+    → M —→ M′
+      -----------------
+    → ` N ∷L M —→ ` N ∷L M′
 
+  ξ-caseL :  ∀ {Γ A} {L L′ : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , A ⊢ A} {N' : Γ , `List ⊢ A}
+    → L —→ L′
+      -------------------------
+    → `caseL L M N N' —→ `caseL L′ M N N'
 
+  β-[] :  ∀ {Γ A} {M : Γ ⊢ A} {N : Γ , A ⊢ A} {N' : Γ , `List ⊢ A}
+      -------------------
+    → `caseL `[] M N N' —→ M
 
+  β-∷ : ∀ {Γ A} {V W : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , A ⊢ A} {N' : Γ , `List ⊢ A}
+    → Value V
+      ----------------------------
+    → `caseL (` V ∷L W ) M N N' —→ N' [ V ] --[ W ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj
 
-
+-- Reflexive and transitive closure
 infix  2 _—↠_
 infix  1 begin_
 infixr 2 _—→⟨_⟩_
@@ -492,13 +513,7 @@ begin_ : ∀ {Γ A} {M N : Γ ⊢ A}
   → M —↠ N
 begin M—↠N = M—↠N
 
-
-
-
-
-
-
-
+--Values do not reduce
 
 V¬—→ : ∀ {Γ A} {M N : Γ ⊢ A}
   → Value M
@@ -511,19 +526,10 @@ V¬—→ V-con        ()
 V¬—→ V-⟨ VM , _ ⟩ (ξ-⟨,⟩₁ M—→M′)    =  V¬—→ VM M—→M′
 V¬—→ V-⟨ _ , VN ⟩ (ξ-⟨,⟩₂ _ N—→N′)  =  V¬—→ VN N—→N′
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+--lists
+V¬—→ V-[]       ()
+V¬—→ (V-cons VM VN)   (ξ-∷₁ M—→M′)     =  V¬—→ VM M—→M′
+--V¬—→ (V-cons VN VM)   (ξ-∷₂ N—→N′)     =  V¬—→ VN N—→N′ 
 
 
 
@@ -584,20 +590,16 @@ progress (case× L M) with progress L
 ...    | step L—→L′                         =  step (ξ-case× L—→L′)
 ...    | done (V-⟨ VM , VN ⟩)               =  step (β-case× VM VN)
 
+--lists
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+progress (`[])                            =  done V-[]
+progress (` N ∷L M) with progress N
+...    | step N—→N′                         =  step (ξ-cons N—→N′)
+...    | done VN                            =  done (V-cons VM)
+progress (case L M N) with progress L
+...    | step L—→L′                         =  step (ξ-case L—→L′)
+...    | done V-zero                        =  step β-zero
+...    | done (V-suc VL)                    =  step (β-suc VL)
 
 
 
@@ -637,22 +639,6 @@ eval (gas (suc m)) L with progress L
 ... | done VL                            =  steps (L ∎) (done VL)
 ... | step {M} L—→M with eval (gas m) M
 ...    | steps M—↠N fin                  =  steps (L —→⟨ L—→M ⟩ M—↠N) fin
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -729,27 +715,10 @@ _ =
 
 
 
-
-
-
-
-
-
-
 postulate
   double-subst :
     ∀ {Γ A B C} {V : Γ ⊢ A} {W : Γ ⊢ B} {N : Γ , A , B ⊢ C} →
       N [ V ][ W ] ≡ (N [ rename S_ W ]) [ V ]
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -776,20 +745,6 @@ sucᶜ = ƛ `suc (# 0)
 
 2+2ᶜ : ∀ {Γ} → Γ ⊢ `ℕ
 2+2ᶜ = plusᶜ · twoᶜ · twoᶜ · sucᶜ · `zero
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
