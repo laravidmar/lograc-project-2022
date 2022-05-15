@@ -26,7 +26,7 @@ V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 V¬—→ V-emptyL     ()
 V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
---V¬—→ (V-∷L VM VW) (ξ-cons₂ VM' W—→N) = V¬—→ VM W—→N 
+--V¬—→ (V-∷L VW VM) (ξ-cons₂ VW M—→N) =  V¬—→ VW VW V¬—→ VM M—→N 
 
 
 --terms that reduce are not values:
@@ -110,13 +110,15 @@ progress (⊢μ ⊢M)                            =  step β-μ
 --lists
 
 progress ⊢emptyL                              =  done V-emptyL
--- progress (⊢cons ⊢M ⊢N) with progress ⊢M
--- ...  | step M—→M′                           =  step (ξ-cons M—→M′)
--- ...  | done VM VN                            = done (V-∷L VM VN)
-progress (⊢caseL ⊢L ⊢M ⊢N ⊢W) with progress ⊢L
+progress (⊢cons ⊢M ⊢N) with progress ⊢M
+...  | step M—→M′                           =  step (ξ-cons M—→M′)
+...  | done VM with progress ⊢N
+...     | step N—→N′                       = step (ξ-cons₂ VM N—→N′)
+...     | done VN                          = done (V-∷L VM VN)
+progress (⊢caseL ⊢L ⊢M ⊢N) with progress ⊢L
 ... | step L—→L′                            =  step (ξ-caseL L—→L′)
 ... | done (V-emptyL)                         =  step β-emptyL
-... | done (V-∷L VL VL')                       =  step (β-cons VL)
+... | done (V-∷L VL VL')                       =  step (β-cons VL VL')
 
 
 postulate
@@ -150,8 +152,9 @@ rename ρ (⊢μ ⊢M)           =  ⊢μ (rename (ext ρ) ⊢M)
 --lists
 rename ρ ⊢emptyL     =  ⊢emptyL
 rename ρ (⊢cons ⊢M ⊢N )   =  ⊢cons (rename ρ ⊢M) (rename ρ ⊢N)
---rename ρ (⊢cons₂ ⊢M ⊢N )   =  ⊢cons (rename ρ ⊢M) (rename ρ ⊢N)
-rename ρ (⊢caseL ⊢L ⊢M ⊢N ⊢V) = ⊢caseL (rename ρ ⊢L) (rename ρ ⊢M) (rename (ext ρ) ⊢N) (rename (ext ρ) ⊢V)
+rename ρ (⊢caseL ⊢L ⊢M ⊢N ) = ⊢caseL (rename ρ ⊢L) (rename ρ ⊢M)  (rename (ext (ext ρ ))⊢N)
+--dvakrat treba uporabt ext zato ker mamo dvakrat v vejici da jih dobimo vn
+
 
 
 --The _weaken_ lemma asserts that a term
@@ -243,9 +246,9 @@ subst {x = y} ⊢V (⊢μ {x = x} ⊢M) with x ≟ y
 --lists
 subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) --zakaj drugi del tudi zamenjamo z V jem 
--- subst {x = y}  ⊢V (⊢caseL {x = x}  ⊢L ⊢M ⊢N ⊢W ) with x ≟ y 
--- ... | yes refl        =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N) (drop ⊢W)
--- ... | no  x≢y         =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N)) (drop ⊢W)
+-- subst {x = y}  ⊢V (⊢caseL {x = x}  ⊢L ⊢M ⊢N ) with x ≟ y 
+-- ... | yes refl        =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N)
+-- ... | no  x≢y         =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N)) 
 
 -- subst {x = y} {x' = y} ⊢V (⊢caseL {x = x} {x' = x'}  ⊢L ⊢M ⊢N ⊢W ) with x ≟ y | x' ≟ y
 -- ... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N) (drop ⊢W)
@@ -276,12 +279,15 @@ preserve (⊢case ⊢L ⊢M ⊢N)        (ξ-case L—→L′)   =  ⊢case (pre
 preserve (⊢case ⊢zero ⊢M ⊢N)     (β-zero)         =  ⊢M
 preserve (⊢case (⊢suc ⊢V) ⊢M ⊢N) (β-suc VV)       =  subst ⊢V ⊢N
 preserve (⊢μ ⊢M)                 (β-μ)            =  subst (⊢μ ⊢M) ⊢M
+
 --lists
+
 preserve ⊢emptyL                  ()
---preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (preserve ⊢M M—→M′) ⊢N
--- preserve (⊢case ⊢L ⊢M ⊢N)        (ξ-case L—→L′)   =  ⊢case (preserve ⊢L L—→L′) ⊢M ⊢N
--- preserve (⊢case ⊢zero ⊢M ⊢N)     (β-zero)         =  ⊢M
--- preserve (⊢case (⊢suc ⊢V) ⊢M ⊢N) (β-suc VV)       =  subst ⊢V ⊢N
+preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (preserve ⊢M M—→M′) ⊢N
+preserve (⊢cons ⊢M ⊢N)            (ξ-cons₂ VM N—→N′)    =  ⊢cons ⊢M (preserve ⊢N N—→N′) 
+-- preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N ta dela sam ta zadnji ne dela 
+-- preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M ta dela 
+--preserve (⊢caseL (⊢cons ⊢V ⊢W) ⊢M ⊢N) (β-cons VV VW)    =  (subst ⊢V ⊢N) (subst ⊢W ⊢N)
 
 
 --Evaluation
@@ -675,15 +681,16 @@ det β-μ            β-μ              =  refl
 
 --lists
 
---det (ξ-cons M—→M′)  (ξ-cons M—→M″)    =  cong `_∷L_ (det M—→M′ M—→M″)
--- det (ξ-caseL L—→L′) (ξ-caseL L—→L″)   =  cong₅ caseL_[emptyL⇒_∣_∶∶L_⇒_]
---                                           (det L—→L′ L—→L″) refl refl refl refl  
+-- det (ξ-cons M—→M′)  (ξ-cons M—→M″)    =  cong `_∷L_ (det M—→M′ M—→M″)
+-- det (ξ-cons₂ VL M—→M′)  (ξ-cons₂ VL M—→M″)    =  cong `_∷L_ (det M—→M′ M—→M″)
+-- det (ξ-caseL L—→L′) (ξ-caseL L—→L″)   =  cong₄ caseL_[emptyL⇒_∣_∶∶L_⇒_]
+                                          --  (det L—→L′ L—→L″) refl refl refl  
 det (ξ-caseL L—→L′) β-emptyL           =  ⊥-elim (V¬—→ V-emptyL L—→L′)
-det (ξ-caseL L—→L′) (β-cons VL)       =  ⊥-elim (V¬—→ (V-∷L VL) L—→L′)
+det (ξ-caseL L—→L′) (β-cons VL VW)       =  ⊥-elim (V¬—→ (V-∷L VL VW) L—→L′)
 det β-emptyL         (ξ-caseL M—→M″)   =  ⊥-elim (V¬—→ V-emptyL M—→M″)
 det β-emptyL         β-emptyL           =  refl
-det (β-cons VL)     (ξ-caseL L—→L″)   =  ⊥-elim (V¬—→ (V-∷L VL) L—→L″)
-det (β-cons _)      (β-cons _)        =  refl
+det (β-cons VL VW)     (ξ-caseL L—→L″)   =  ⊥-elim (V¬—→ (V-∷L VL VW) L—→L″)
+det (β-cons _ _)      (β-cons _ _)        =  refl
 
 
 

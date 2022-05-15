@@ -35,7 +35,7 @@ with multiplication as a primitive operation on numbers:
 
 data Type : Set where
   `ℕ    : Type
-  `List : Type
+  `List : Type → Type
   _⇒_   : Type → Type → Type
   Nat   : Type
   _`×_  : Type → Type → Type
@@ -154,23 +154,22 @@ data _⊢_ : Context → Type → Set where
 
   --lists
 
-  `[] : ∀ {Γ}
+  `[] : ∀ {Γ A}
       ------
-    → Γ ⊢ `List
+    → Γ ⊢ `List A
 
   `_∷L_ : ∀ {Γ A}
     → Γ ⊢ A
-    → Γ ⊢ `List
+    → Γ ⊢ `List A
       ------
-    → Γ ⊢ `List
+    → Γ ⊢ `List A
 
-  `caseL : ∀ {Γ A}
-    → Γ ⊢ `List
-    → Γ ⊢ A
-    → Γ , A ⊢ A
-    → Γ , `List ⊢ A
+  `caseL : ∀ {Γ A B}
+    → Γ ⊢ `List A
+    → Γ ⊢ B
+    → Γ , A , `List A ⊢ B
       -----
-    → Γ ⊢ A
+    → Γ ⊢ B
 
 
 --Abbreviating de Bruijn indices
@@ -226,7 +225,7 @@ rename ρ (case× L M)    =  case× (rename ρ L) (rename (ext (ext ρ)) M)
 --lists
 rename ρ (`[])        =  `[]
 rename ρ (` N ∷L M)       =  ` (rename ρ N) ∷L (rename ρ M)
-rename ρ (`caseL L M N N') = `caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
+rename ρ (`caseL L M N) = `caseL (rename ρ L) (rename ρ M) (rename (ext (ext ρ)) N)
 
 
 
@@ -254,7 +253,7 @@ subst σ (case× L M)    =  case× (subst σ L) (subst (exts (exts σ)) M)
 --lists
 subst σ (`[])        =  `[]
 subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
-subst σ (`caseL L M N N')   =  `caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
+subst σ (`caseL L M N)   =  `caseL (subst σ L) (subst σ M) (subst (exts (exts σ)) N) 
 
 
 
@@ -323,11 +322,11 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
 
 --lists 
 
-  V-[] : ∀ {Γ} 
+  V-[] : ∀ {Γ A} 
       -----------------
-    → Value (`[] {Γ})
+    → Value (`[] {Γ} {A} )
 
-  V-cons : ∀ {Γ} {V : Γ ⊢ `List} {W : Γ ⊢ `List}
+  V-cons : ∀ {Γ A} {V : Γ ⊢ A} {W : Γ ⊢ `List A}
     → Value V
     → Value W
       --------------
@@ -465,29 +464,30 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
     → case× `⟨ V , W ⟩ M —→ M [ V ][ W ]
 
 --lists 
-  ξ-∷₁ : ∀ {Γ} {N M M′ : Γ ⊢ `List}
+  ξ-∷₁ : ∀ {Γ A} {M M′ : Γ ⊢ A} {N : Γ ⊢ `List A}
     → M —→ M′
       -----------------
     → ` M ∷L N —→ ` M′ ∷L N
 
-  ξ-∷₂ : ∀ {Γ} {N M M′ : Γ ⊢ `List}
+  ξ-∷₂ : ∀ {Γ A} {N : Γ ⊢  A} {M M′ : Γ ⊢ `List A}
+    → Value N
     → M —→ M′
       -----------------
     → ` N ∷L M —→ ` N ∷L M′
 
-  ξ-caseL :  ∀ {Γ A} {L L′ : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , A ⊢ A} {N' : Γ , `List ⊢ A}
+  ξ-caseL :  ∀ {Γ A B} {L L′ : Γ ⊢ `List A} {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B}
     → L —→ L′
       -------------------------
-    → `caseL L M N N' —→ `caseL L′ M N N'
+    → `caseL L M N —→ `caseL L′ M N 
 
-  β-[] :  ∀ {Γ A} {M : Γ ⊢ A} {N : Γ , A ⊢ A} {N' : Γ , `List ⊢ A}
+  β-[] :  ∀ {Γ A B} {M : Γ ⊢ B} {N : Γ , A , `List  A ⊢ B} 
       -------------------
-    → `caseL `[] M N N' —→ M
+    → `caseL `[] M N —→ M
 
-  β-∷ : ∀ {Γ A} {V W : Γ ⊢ `List} {M : Γ ⊢ A} {N : Γ , A ⊢ A} {N' : Γ , `List ⊢ A}
+  β-∷ : ∀ {Γ A B} {V : Γ ⊢ A} {W : Γ ⊢ `List A}  {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B} 
     → Value V
       ----------------------------
-    → `caseL (` V ∷L W ) M N N' —→ N' [ V ] --[ W ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj
+    → `caseL (` V ∷L W ) M N —→ N [ V ] [ W ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj
 
 -- Reflexive and transitive closure
 infix  2 _—↠_
@@ -593,13 +593,13 @@ progress (case× L M) with progress L
 --lists
 
 progress (`[])                            =  done V-[]
-progress (` N ∷L M) with progress N
-...    | step N—→N′                         =  step (ξ-cons N—→N′)
-...    | done VN                            =  done (V-cons VM)
-progress (case L M N) with progress L
-...    | step L—→L′                         =  step (ξ-case L—→L′)
-...    | done V-zero                        =  step β-zero
-...    | done (V-suc VL)                    =  step (β-suc VL)
+-- progress (` N ∷L M) with progress N
+-- ...    | step N—→N′                         =  step (ξ-cons N—→N′)
+-- ...    | done VN                            =  done (V-cons VM)
+-- progress (case L M N) with progress L
+-- ...    | step L—→L′                         =  step (ξ-case L—→L′)
+-- ...    | done V-zero                        =  step β-zero
+-- ...    | done (V-suc VL)                    =  step (β-suc VL)
 
 
 

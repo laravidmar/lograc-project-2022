@@ -171,8 +171,7 @@ data _⊢_ : Context → Type → Set where
   caseL : ∀ {Γ A B}
     → Γ ⊢ `List A
     → Γ ⊢ B
-    → Γ , A  ⊢ B  --tail  is in list
-    → Γ , `List A ⊢ B  -- head is in list
+    → Γ , A , `List A ⊢ B  --tail  is in list
       ----------
     → Γ ⊢ B 
 
@@ -315,7 +314,7 @@ rename ρ (case L M N)   =  case (rename ρ L) (rename ρ M) (rename (ext ρ) N)
 rename ρ (μ N)          =  μ (rename (ext ρ) N)
 rename ρ (`emptyL)      =  `emptyL
 rename ρ (` M' ∷L M)    = ` (rename ρ M') ∷L (rename ρ M)
-rename ρ (caseL L M N N') = caseL (rename ρ L) (rename ρ M) (rename (ext ρ) N) (rename (ext ρ) N')
+rename ρ (caseL L M N) = caseL (rename ρ L) (rename ρ M) (rename (ext (ext ρ)) N) 
 
 
 
@@ -381,7 +380,7 @@ subst σ (case L M N)   =  case (subst σ L) (subst σ M) (subst (exts σ) N)
 subst σ (μ N)          =  μ (subst (exts σ) N)
 subst σ (`emptyL)        =  `emptyL
 subst σ (` M' ∷L M)       =  ` (subst σ M') ∷L (subst σ M)
-subst σ (caseL L M N N')   =  caseL (subst σ L) (subst σ M) (subst (exts σ) N) (subst (exts σ) N')
+subst σ (caseL L M N)   =  caseL (subst σ L) (subst σ M) (subst (exts (exts σ)) N)
 
 
 --Single substitution. general case
@@ -526,19 +525,20 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       -----------------
     → ` M ∷L N —→ ` M ∷L N′
 
-  ξ-caseL : ∀ {Γ A B} {L L′ : Γ ⊢ `List A } {M : Γ ⊢ B} {N : Γ , A ⊢ B}  {W : Γ , `List A ⊢ B}
+  ξ-caseL : ∀ {Γ A B} {L L′ : Γ ⊢ `List A } {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B}
     → L —→ L′
       -------------------------
-    → caseL L M N W —→ caseL L′ M N W
+    → caseL L M N —→ caseL L′ M N
 
-  β-emptyL :  ∀ {Γ A B} {M : Γ ⊢ B} {N : Γ , A ⊢ B} {W : Γ , `List A ⊢ B}
+  β-emptyL :  ∀ {Γ A B} {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B} 
       -------------------
-    → caseL (`emptyL) M N W —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
+    → caseL (`emptyL) M N —→ M -- ker imamo empty potem avtomatko se vrne prvi if vn 
 
-  β-cons : ∀ {Γ A} {V : Γ ⊢ A} {W : Γ ⊢ `List A} {M : Γ ⊢ A} {N : Γ , `List A ⊢ A} {N' : Γ , `List A ⊢ A}  
+  β-cons : ∀ {Γ A B} {V : Γ ⊢ A} {W : Γ , A  ⊢ `List A} {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B} 
     → Value V
+    -- → Value W
       ----------------------------
-    → caseL (` V ∷L W) M N N' —→ N' [ V ] -- [ W ] isto kot v more, mora bit ampak ne dela z njim
+    → caseL (` V ∷L W ) M N —→ N [ V ] [ W ] --isto kot v more, mora bit ampak ne dela z njim
 
 
 

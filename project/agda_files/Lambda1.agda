@@ -113,6 +113,8 @@ data Value : Term → Set where
       --------------
     → Value (`suc V)
 
+  --lists
+
   V-emptyL :  --adding
     -------------
     Value `emptyL
@@ -271,6 +273,7 @@ data _—→_ : Term → Term → Set where
 
   β-cons : ∀ {x y V W M N}
     → Value V --imamo vrednost V se pravi seznma ni prazn in gre v drugi if stavek
+    → Value W
       ---------------------------------------------------
     → caseL ` V ∷L W [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ N [ x := V ] [ y := W ]
 
@@ -558,19 +561,18 @@ data _⊢_⦂_ : Context → Term → Type → Set where
 
   -- L-I₂
   ⊢cons : ∀ {Γ L M A}
-    → Γ ⊢ L ⦂ `List A
     → Γ ⊢ M ⦂ A -- head needs to be some element in A
+    → Γ ⊢ L ⦂ `List A
       ---------------
     → Γ ⊢ ` M ∷L L ⦂ `List A
 
   -- -- ℕ-E
-  ⊢caseL : ∀ {Γ L M x y N A B}
+  ⊢caseL : ∀ {Γ L M x xs N A B}
     → Γ ⊢ L ⦂ `List A
     → Γ ⊢ M ⦂ B
-    → Γ , x ⦂ A ⊢ N ⦂ B
-    → Γ , y ⦂ `List A ⊢ N ⦂ B
+    → Γ , x ⦂ A , xs ⦂ `List A ⊢ N ⦂ B
       -------------------------------------
-    → Γ ⊢ caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ] ⦂ B
+    → Γ ⊢ caseL L [emptyL⇒ M ∣ x ∷L xs ⇒ N ] ⦂ B
 
 
 Ch : Type → Type
