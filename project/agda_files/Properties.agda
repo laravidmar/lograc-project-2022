@@ -23,6 +23,9 @@ V¬—→ : ∀ {M N}
 V¬—→ V-ƛ        ()
 V¬—→ V-zero     ()
 V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
+
+-- lists
+
 V¬—→ V-emptyL     ()
 V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
@@ -246,15 +249,12 @@ subst {x = y} ⊢V (⊢μ {x = x} ⊢M) with x ≟ y
 --lists
 subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) --zakaj drugi del tudi zamenjamo z V jem 
--- subst {x = y}  ⊢V (⊢caseL {x = x}  ⊢L ⊢M ⊢N ) with x ≟ y 
--- ... | yes refl        =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N)
--- ... | no  x≢y         =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N)) 
 
--- subst {x = y} {x' = y} ⊢V (⊢caseL {x = x} {x' = x'}  ⊢L ⊢M ⊢N ⊢W ) with x ≟ y | x' ≟ y
--- ... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N) (drop ⊢W)
--- ... | yes refl | no  x≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N) (subst ⊢V (swap x≢y ⊢W))
--- ... | no  x≢y   | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
--- ... | no  x≢y  | no  x≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
+subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y -- spremenit je blo treba na xs iz x' in odstranu sm ⊢W ker ma CaseL sam 3 argumente (zato je treba popravit tut spodno stvar)
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N) -- (drop ⊢W)
+... | yes refl | no  x≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {- (drop ⊢N) -} (subst ⊢V (swap x≢y ⊢N)) --W->N
+... | no  x≢y   | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
+... | no  x≢y  | no  x≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
 --Ali je tukaj treba dodot še drugi argument
 
 --Preservation
@@ -285,9 +285,9 @@ preserve (⊢μ ⊢M)                 (β-μ)            =  subst (⊢μ ⊢M) �
 preserve ⊢emptyL                  ()
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (preserve ⊢M M—→M′) ⊢N
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons₂ VM N—→N′)    =  ⊢cons ⊢M (preserve ⊢N N—→N′) 
--- preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N ta dela sam ta zadnji ne dela 
--- preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M ta dela 
---preserve (⊢caseL (⊢cons ⊢V ⊢W) ⊢M ⊢N) (β-cons VV VW)    =  (subst ⊢V ⊢N) (subst ⊢W ⊢N)
+preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N --ta dela sam ta zadnji ne dela 
+preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M --ta dela 
+preserve (⊢caseL (⊢cons ⊢V ⊢W) ⊢M ⊢N) (β-cons VV VW)    =  ? --(subst ⊢V ⊢N) (subst ⊢W ⊢N)
 
 
 --Evaluation

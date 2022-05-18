@@ -487,7 +487,7 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
   β-∷ : ∀ {Γ A B} {V : Γ ⊢ A} {W : Γ ⊢ `List A}  {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B} 
     → Value V
       ----------------------------
-    → `caseL (` V ∷L W ) M N —→ N [ V ] [ W ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj
+    → `caseL (` V ∷L W ) M N —→ N [ W ] [ V ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj (reku je da morem delat hole pa gledat kaj agda hoče od mene) (pa reku je da je prvo W pol pa V)
 
 -- Reflexive and transitive closure
 infix  2 _—↠_
