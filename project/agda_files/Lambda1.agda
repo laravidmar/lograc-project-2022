@@ -560,7 +560,7 @@ data _⊢_⦂_ : Context → Term → Type → Set where
     → Γ ⊢ `emptyL ⦂ `List A
 
   -- L-I₂
-  ⊢cons : ∀ {Γ L M A}
+  ⊢cons : ∀ {Γ M L A}
     → Γ ⊢ M ⦂ A -- head needs to be some element in A
     → Γ ⊢ L ⦂ `List A
       ---------------
