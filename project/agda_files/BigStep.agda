@@ -40,7 +40,11 @@ _,'_ : ∀ {Γ} → ClosEnv Γ → Clos → ClosEnv (Γ , ★)
 
 
 
-
+{-
+The big-step semantics is represented as a ternary relation, 
+written γ ⊢ M ⇓ V, where γ is the environment, M is the input term,
+ and V is the result value. A value is a closure whose term is a lambda abstractio
+-}
 
 
 data _⊢_⇓_ : ∀{Γ} → ClosEnv Γ → (Γ ⊢ ★) → Clos → Set where
@@ -61,13 +65,7 @@ data _⊢_⇓_ : ∀{Γ} → ClosEnv Γ → (Γ ⊢ ★) → Clos → Set where
 
 
 
-
-
-
-
-
-
-
+--The big-step semantics is deterministic (proof)
 
 ⇓-determ : ∀{Γ}{γ : ClosEnv Γ}{M : Γ ⊢ ★}{V V' : Clos}
   → γ ⊢ M ⇓ V → γ ⊢ M ⇓ V'
@@ -84,7 +82,7 @@ data _⊢_⇓_ : ∀{Γ} → ClosEnv Γ → (Γ ⊢ ★) → Clos → Set where
 
 
 
-
+--Big-step evaluation implies beta reduction to a lambda
 
 
 _≈_ : Clos → (∅ ⊢ ★) → Set

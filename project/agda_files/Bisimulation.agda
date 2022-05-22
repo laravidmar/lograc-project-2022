@@ -4,21 +4,6 @@ module agda_files.Bisimulation where
 open import agda_files.More
 
 
-
-{-
-open import agda_files.Properties
-open import agda_files_P1.Isomorphism
-open import agda_files.Lambda1
--}
-
-
-
-
-
-
-
-
-
 --We are particularly interested in the situation where there is also
 ---a simulation from the target to the source: every reduction in the
 --target has a corresponding reduction sequence in the source.  This

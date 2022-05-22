@@ -484,10 +484,11 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
       -------------------
     → `caseL `[] M N —→ M
 
-  β-∷ : ∀ {Γ A B} {V : Γ ⊢ A} {W : Γ ⊢ `List A}  {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B} 
+  β-∷ : ∀ {Γ A B} {V : Γ ⊢ A} {W : Γ ⊢ `List A} {M : Γ ⊢ B} {N : Γ , A , `List A ⊢ B} 
     → Value V
-      ----------------------------
-    → `caseL (` V ∷L W ) M N —→ N [ W ] [ V ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj (reku je da morem delat hole pa gledat kaj agda hoče od mene) (pa reku je da je prvo W pol pa V)
+    → Value W  
+      ---------------------------- 
+    → `caseL (` V ∷L W)  M N —→ N [ W ] [ V ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj (reku je da morem delat hole pa gledat kaj agda hoče od mene) (pa reku je da je prvo W pol pa V)
 
 -- Reflexive and transitive closure
 infix  2 _—↠_
@@ -596,11 +597,11 @@ progress (`[])                            =  done V-[]
 -- progress (` N ∷L M) with progress N
 -- ...    | step N—→N′                         =  step (ξ-cons N—→N′)
 -- ...    | done VN                            =  done (V-cons VM)
--- progress (case L M N) with progress L
--- ...    | step L—→L′                         =  step (ξ-case L—→L′)
--- ...    | done V-zero                        =  step β-zero
--- ...    | done (V-suc VL)                    =  step (β-suc VL)
-
+progress ( `caseL L M N) with progress L
+...    | step L—→L′                         =  step (ξ-caseL L—→L′)
+...    | done V-[]                        =  step β-[]
+...    | done (V-cons VL VW)               =  step (β-∷ VL VW)
+ 
 
 
 

@@ -32,6 +32,7 @@ Id = String
 
 data Type : Set where
   `ℕ    : Type
+  `List : Type → Type
   _⇒_   : Type → Type → Type
 
 data Context : Set where
@@ -41,6 +42,12 @@ data Context : Set where
 
 data Term⁺ : Set
 data Term⁻ : Set
+
+{-
+The syntax of terms is defined by mutual recursion.
+We use `Term⁺` and `Term⁻`
+for terms with synthesized and inherited types, respectively.
+-}
 
 data Term⁺ where
   `_                       : Id → Term⁺
@@ -54,7 +61,7 @@ data Term⁻ where
   `case_[zero⇒_|suc_⇒_]    : Term⁺ → Term⁻ → Id → Term⁻ → Term⁻
   μ_⇒_                     : Id → Term⁻ → Term⁻
   _↑                       : Term⁺ → Term⁻
-
+--Lists
   `emptyL                  : Term⁻
   `_∷L_                    : Term⁻ → Term⁻  → Term⁻
   caseL_[emptyL⇒_∣_∷L_⇒_]  : Term⁺ → Term⁻ → Id → Id → Term⁻ → Term⁻
@@ -108,6 +115,15 @@ data _∋_⦂_ : Context → Id → Type → Set where
     → Γ ∋ x ⦂ A
       -----------------
     → Γ , y ⦂ B ∋ x ⦂ A
+
+{-
+Note the inclusion of the switching forms,
+`M ↓ A` and `M ↑`:
+
+As with syntax, the judgments for synthesizing
+and inheriting types are mutually recursive
+
+-}
 
 
 data _⊢_↑_ : Context → Term⁺ → Type → Set
@@ -164,6 +180,24 @@ data _⊢_↓_ where
     → A ≡ B
       -------------
     → Γ ⊢ (M ↑) ↓ B
+
+  --lists
+  ⊢emptyL : ∀ {Γ A}
+      --------------
+    → Γ ⊢ `emptyL ↓ `List A
+
+  ⊢∷L : ∀ {Γ M L A }
+    → Γ ⊢ L ↓ A 
+    → Γ ⊢ M ↓ `List A
+      ---------------
+    → Γ ⊢ ` L ∷L M ↓ `List A
+
+  ⊢caseL : ∀ {Γ L M x xs N A}
+    → Γ ⊢ L ↑ `List A
+    → Γ ⊢ M ↓ B
+    → Γ , x ⦂ A , xs ⦂ `List A ⊢ N ↓ B
+      -------------------------------------
+    → Γ ⊢ `caseL L [emptyL⇒ M ∣ x ∷L xs ⇒ N ] ↓ B
 
 
 _≟Tp_ : (A B : Type) → Dec (A ≡ B)
@@ -222,7 +256,10 @@ lookup (Γ , y ⦂ B) x with x ≟ y
 ...             | no  ¬∃          =  no  (ext∋ x≢y ¬∃)
 ...             | yes ⟨ A , ∋x ⟩  =  yes ⟨ A , S x≢y ∋x ⟩
 
-
+{-
+If `Γ ⊢ L ↑ A ⇒ B` holds but `Γ ⊢ M ↓ A` does not hold, then
+there is no term `B′` such that `Γ ⊢ L · M ↑ B′` holds:
+-}
 ¬arg : ∀ {Γ A B L M}
   → Γ ⊢ L ↑ A ⇒ B
   → ¬ Γ ⊢ M ↓ A
@@ -230,7 +267,9 @@ lookup (Γ , y ⦂ B) x with x ≟ y
   → ¬ (∃[ B′ ]( Γ ⊢ L · M ↑ B′ ))
 ¬arg ⊢L ¬⊢M ⟨ B′ , ⊢L′ · ⊢M′ ⟩ rewrite dom≡ (uniq-↑ ⊢L ⊢L′) = ¬⊢M ⊢M′
 
-
+{-
+If `Γ ⊢ M ↑ A` holds and `A ≢ B`, then `Γ ⊢ (M ↑) ↓ B` does not hold:
+-}
 
 ¬switch : ∀ {Γ M A B}
   → Γ ⊢ M ↑ A
@@ -240,6 +279,15 @@ lookup (Γ , y ⦂ B) x with x ≟ y
 ¬switch ⊢M A≢B (⊢↑ ⊢M′ A′≡B) rewrite uniq-↑ ⊢M ⊢M′ = A≢B A′≡B
 
 --Synthesize and inherit types
+
+{-
+Synthesis is given
+a context `Γ` and a synthesis term `M` and either
+returns a type `A` and evidence that `Γ ⊢ M ↑ A`, or its negation.
+Inheritance is given a context `Γ`, an inheritance term `M`,
+and a type `A` and either returns evidence that `Γ ⊢ M ↓ A`,
+or its negation:
+-}
 
 synthesize : ∀ (Γ : Context) (M : Term⁺)
              ---------------------------

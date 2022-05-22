@@ -29,7 +29,7 @@ V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 V¬—→ V-emptyL     ()
 V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
---V¬—→ (V-∷L VW VM) (ξ-cons₂ VW M—→N) =  V¬—→ VW VW V¬—→ VM M—→N 
+--V¬—→ (V-∷L VW VM) (ξ-cons₂ VW M—→N) =  V¬—→ VW M—→N 
 
 
 --terms that reduce are not values:
@@ -251,11 +251,10 @@ subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) --zakaj drugi del tudi zamenjamo z V jem 
 
 subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y -- spremenit je blo treba na xs iz x' in odstranu sm ⊢W ker ma CaseL sam 3 argumente (zato je treba popravit tut spodno stvar)
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop ⊢N) -- (drop ⊢W)
-... | yes refl | no  x≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {- (drop ⊢N) -} (subst ⊢V (swap x≢y ⊢N)) --W->N
-... | no  x≢y   | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (drop (drop ⊢N)) -- drop ⊢W
+... | yes refl | no  x≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N)) --W->N
+... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
 ... | no  x≢y  | no  x≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap x≢y ⊢N))
---Ali je tukaj treba dodot še drugi argument
 
 --Preservation
 {-
