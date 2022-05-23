@@ -594,13 +594,17 @@ progress (case× L M) with progress L
 --lists
 
 progress (`[])                            =  done V-[]
--- progress (` N ∷L M) with progress N
--- ...    | step N—→N′                         =  step (ξ-cons N—→N′)
--- ...    | done VN                            =  done (V-cons VM)
+progress (` N ∷L M) with progress N
+...    | step N—→N′                         =  step (ξ-∷₁ N—→N′)
+...    | done VM with progress N
+...       | step N—→N′                       = step (ξ-∷₂ VM N—→N′)
+...       | done VM VN                        = done (V-cons VM VN)
 progress ( `caseL L M N) with progress L
 ...    | step L—→L′                         =  step (ξ-caseL L—→L′)
 ...    | done V-[]                        =  step β-[]
 ...    | done (V-cons VL VW)               =  step (β-∷ VL VW)
+
+
  
 
 

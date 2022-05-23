@@ -538,7 +538,7 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
     → Value V
     → Value W
       ----------------------------
-    → caseL (` V ∷L W ) M N —→ N [ W ] [ V ] --isto kot v more, mora bit ampak ne dela z njim
+    → caseL (` V ∷L W ) M N —→ (N [ rename {!   !} W ] [ V ])  --isto kot v more, mora bit ampak ne dela z njim
 
 
 
@@ -688,14 +688,17 @@ progress (case L M N) with progress L
 ...    | done (V-suc VL)                =  step (β-suc VL)
 progress (μ N)                          =  step (β-μ)
 progress (`emptyL)                        =  done V-emptyL
--- progress (` M ∷L N) with progress M -- tuki in progress N ker je N in A 
--- ...    | step M—→M′                   =  step (ξ-cons M—→M′) 
--- ...    | done VM                      = done (V-cons VM )  
-progress (caseL L M N) with progress L
-...    | step L—→L′                     =  step (ξ-caseL L—→L′)
-...    | done V-emptyL                    =  step (β-emptyL)
-...    | done (V-cons VL)                =  step (β-cons VL)   
--- --tose ne dela
+progress (` M ∷L N) with progress M -- tuki in progress N ker je N in A 
+...    | step M—→M′                   =  step (ξ-cons M—→M′) 
+...    | done VM with progress N
+...        | step N—→N′                       = step (ξ-cons₂ VM N—→N′)
+...        | done VN                          = done (V-cons VM VN) 
+-- progress (caseL L M N) with progress L
+-- ...    | step L—→L′                     =  step (ξ-caseL L—→L′)
+-- ...    | done V-emptyL                    =  step (β-emptyL)
+-- ...    | done (V-cons VL WL)                =  step (β-cons VL WL)   
+-- -- --tose ne dela
+
 
 
 
