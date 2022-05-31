@@ -141,6 +141,8 @@ Let `Γ` and `Δ` be two contexts such that every variable that
 appears in `Γ` also appears with the same type in `Δ`.  Then
 if any term is typeable under `Γ`, it has the same type under `Δ`.
 -}
+
+
 rename : ∀ {Γ Δ}
   → (∀ {x A} → Γ ∋ x ⦂ A → Δ ∋ x ⦂ A)
     ----------------------------------
@@ -192,8 +194,24 @@ drop {Γ} {x} {M} {A} {B} {C} ⊢M = rename ρ ⊢M
       -------------------------
     → Γ , x ⦂ B ∋ z ⦂ C
   ρ Z                 =  Z
-  ρ (S x≢x Z)         =  ⊥-elim (x≢x refl)
-  ρ (S z≢x (S _ ∋z))  =  S z≢x ∋z
+  ρ (S x≢x Z)         = ⊥-elim (x≢x refl)
+  ρ (S z≢x (S _ ∋z))  = S z≢x ∋z
+
+
+dropL : ∀ {Γ x M A B D C}
+  → Γ , x ⦂ A , x ⦂ B , x ⦂ D ⊢ M ⦂ C
+    --------------------------
+  → Γ , x ⦂ B , x ⦂ D ⊢ M ⦂ C
+dropL {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
+  where
+  ρ : ∀ {z C}
+    → Γ , x ⦂ A , x ⦂ B , x ⦂ D ∋ z ⦂ C
+      -------------------------
+    → Γ , x ⦂ B , x ⦂ D ∋ z ⦂ C
+  ρ Z                 =  Z
+  ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) --⊥-elim (x≢x refl)
+  ρ (S z≢x (S _ ∋z))  =  S z≢x (S z≢x {! !})  --S z≢x ∋z
+  --ρ (S z≢x (S z≢x (S _ ∋z)))  =  {!   !} -- S z≢y (S z≢x ( S z≢xs ∋z))
 
 {-
 The _swap_ lemma asserts that a term which is well typed in a
@@ -222,19 +240,16 @@ swapL : ∀ {Γ x xs y M A B D C}
   → Γ , y ⦂ B , x ⦂ A , xs ⦂ D ⊢ M ⦂ C
     --------------------------
   → Γ , x ⦂ A , xs ⦂ D , y ⦂ B ⊢ M ⦂ C
-swapL {Γ} {x} {xs} {y} {M} {A} {B} {D} {C} x≢y xs≢y xs≢x ⊢M = rename ρ ⊢M
+swapL {Γ} {x} {xs} {y} {M} {A} {B} {D} {C} x≢xs xs≢y y≢x ⊢M = rename ρ ⊢M
   where
   ρ : ∀ {z C}
     → Γ , y ⦂ B , x ⦂ A , xs ⦂ D ∋ z ⦂ C
       --------------------------
     → Γ , x ⦂ A , xs ⦂ D , y ⦂ B ∋ z ⦂ C
 
-
-  -- Treba je dodat case še za ta primer, pls mr ahman
   ρ Z                   =  S xs≢y Z
-  ρ (S z≢x Z)          =  Z
+  ρ (S z≢x Z)          =  S (λ x≢y → y≢x ((sym x≢y ))) (S x≢xs Z)
   ρ (S z≢x (S z≢xs Z))           =  Z
-  --ρ (S z≢x (S z≢xs ∋z))  =  S z≢xs (S z≢x ∋z)
   ρ (S z≢x (S z≢xs (S z≢y ∋z)))  =  S z≢y (S z≢x ( S z≢xs ∋z))
 
 {-
@@ -274,10 +289,10 @@ subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) --zakaj drugi del tudi zamenjamo z V jem 
 
 subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y -- spremenit je blo treba na xs iz x' in odstranu sm ⊢W ker ma CaseL sam 3 argumente (zato je treba popravit tut spodno stvar)
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {!   !}  -- drop ⊢W
-... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap xs≢y (swapL {!   !} {!   !} {!   !} {!   !}))) --(subst ⊢V (swap x≢y ⊢N)) --W->N
-... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} --(subst ⊢V (swap x≢y ⊢N))
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {!   !} --(subst ⊢V (swap x≢y ⊢N))
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL ⊢N)  -- drop ⊢W
+... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  (dropL ⊢N ) !} --(subst ⊢V (swap xs≢y (swapL {!   !} {!   !} {!   !} {!   !}))) --(subst ⊢V (swap x≢y ⊢N)) --W->N
+... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  (dropL ⊢N)  !} --(subst ⊢V (swap x≢y ⊢N))
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swapL {! x≢y   !} {!   !} {!   !} ⊢N)) --(subst ⊢V (swap x≢y ⊢N))
 
 --Preservation
 {-
@@ -728,4 +743,4 @@ cong₅ f refl refl refl refl refl = refl
 
 
 
--- Narejena 30% (Treba popravit par stvari)
+-- Narejena 50% (Treba popravit par stvari)

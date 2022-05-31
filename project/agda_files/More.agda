@@ -337,6 +337,9 @@ data Value : ∀ {Γ A} → Γ ⊢ A → Set where
 
 --reduction
 
+weakenL : ∀ {A B Γ} → Γ ∋ B → Γ , A ∋ B
+weakenL x = S x
+
 infix 2 _—→_
 
 data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
@@ -488,7 +491,7 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
     → Value V
     → Value W  
       ---------------------------- 
-    → `caseL (` V ∷L W)  M N —→ N [ W ] [ V ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj (reku je da morem delat hole pa gledat kaj agda hoče od mene) (pa reku je da je prvo W pol pa V)
+    → `caseL (` V ∷L W)  M N —→ N [ rename weakenL W ] [ V ] -- tukej piše v navodilih da bi mogeu bit še en oglati oklepaj (reku je da morem delat hole pa gledat kaj agda hoče od mene) (pa reku je da je prvo W pol pa V)
 
 -- Reflexive and transitive closure
 infix  2 _—↠_
@@ -530,7 +533,7 @@ V¬—→ V-⟨ _ , VN ⟩ (ξ-⟨,⟩₂ _ N—→N′)  =  V¬—→ VN N—�
 --lists
 V¬—→ V-[]       ()
 V¬—→ (V-cons VM VN)   (ξ-∷₁ M—→M′)     =  V¬—→ VM M—→M′
---V¬—→ (V-cons VN VM)   (ξ-∷₂ N—→N′)     =  V¬—→ VN N—→N′ 
+--V¬—→ (V-cons VN VM)   (ξ-∷₂ VN M—→M′)     =  V¬—→ VN M—→M′ 
 
 
 

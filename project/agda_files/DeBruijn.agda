@@ -299,10 +299,11 @@ ext ρ Z      =  Z
 ext ρ (S x)  =  S (ρ x)
 
 
-
+Ren : Context → Context → Set
+Ren Γ Δ = ∀ {A} → Γ ∋ A → Δ ∋ A
 
 rename : ∀ {Γ Δ }
-  → (∀ {A} → Γ ∋ A → Δ ∋ A)
+  → Ren Γ Δ
     -----------------------
   → (∀ {A} → Γ ⊢ A → Δ ⊢ A)
 rename ρ (` x)          =  ` (ρ x)
@@ -468,6 +469,10 @@ combined with a destructor, labelled with `β`:
 `β -->poenostavljajo konstruktor
 v kombinaciji z destruktorjem, označenim z `β`:
 -}
+
+weakenL : ∀ {A B Γ} → Γ ∋ B → Γ , A ∋ B
+weakenL x = S x
+
 infix 2 _—→_
 
 data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
@@ -538,7 +543,7 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
     → Value V
     → Value W
       ----------------------------
-    → caseL (` V ∷L W ) M N —→ (N [ rename {!   !} W ] [ V ])  --isto kot v more, mora bit ampak ne dela z njim
+    → caseL (` V ∷L W ) M N —→ (N [ rename weakenL W ] [ V ])  --isto kot v more, mora bit ampak ne dela z njim
 
 
 
@@ -693,11 +698,11 @@ progress (` M ∷L N) with progress M -- tuki in progress N ker je N in A
 ...    | done VM with progress N
 ...        | step N—→N′                       = step (ξ-cons₂ VM N—→N′)
 ...        | done VN                          = done (V-cons VM VN) 
--- progress (caseL L M N) with progress L
--- ...    | step L—→L′                     =  step (ξ-caseL L—→L′)
--- ...    | done V-emptyL                    =  step (β-emptyL)
--- ...    | done (V-cons VL WL)                =  step (β-cons VL WL)   
--- -- --tose ne dela
+progress (caseL L M N) with progress L
+...    | step L—→L′                     =  step (ξ-caseL L—→L′)
+...    | done V-emptyL                    =  step (β-emptyL)
+...    | done (V-cons VL WL)                =  step (β-cons VL WL)   
+
 
 
 

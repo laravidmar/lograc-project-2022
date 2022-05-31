@@ -81,7 +81,7 @@ case′ L [zero⇒ M |suc (` x) ⇒ N ]  =  case L [zero⇒ M |suc x ⇒ N ]
 
 caseL′_[emptyL⇒_∣_∷L_⇒_] : Term → Term  → (t : Term) →  {_ : T (var? t)} →(t₁ : Term) → {_ : T (var? t₁)} → Term  → Term  -- for every id we need one t so theh ∷L can be processed
 caseL′ L [emptyL⇒ M ∣(` y ) ∷L (` x) ⇒ N ]  =  caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ]
-
+2+2 = {!   !}
 
 μ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
 μ′ (` x) ⇒ N  =  μ x ⇒ N
@@ -175,8 +175,8 @@ _[_:=_] : Term → Id → Term → Term
 (` M' ∷L M) [ y := V ]  = ` (M' [ y := V ]) ∷L ( M [ y := V ])
 (caseL L [emptyL⇒ M ∣ x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
 ... | yes _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N ]
-... | no  _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ (x') ∷L x ⇒ N [ y := V ] ] -- to pomoje ni prou ker kako in ve da mora to aplicirat ravno na prvi argument
-... | yes _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N [ y := V ] ] --tuki bi mogu na druzga narest 
+... | no  _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ (x') ∷L x ⇒ N ] -- to pomoje ni prou ker kako in ve da mora to aplicirat ravno na prvi argument
+... | yes _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N ] --tuki bi mogu na druzga narest 
 ... | no  _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L (x) ⇒ N [ y := V ] ]
 
 
@@ -491,6 +491,7 @@ data _∋_⦂_ : Context → Id → Type → Set where
     → Γ ∋ x ⦂ A
       ------------------
     → Γ , y ⦂ B ∋ x ⦂ A
+  
 
 
 _ : ∅ , "x" ⦂ `ℕ ⇒ `ℕ , "y" ⦂ `ℕ , "z" ⦂ `ℕ ∋ "x" ⦂ `ℕ ⇒ `ℕ
