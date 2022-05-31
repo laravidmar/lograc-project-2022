@@ -214,6 +214,29 @@ swap {Γ} {x} {y} {M} {A} {B} {C} x≢y ⊢M = rename ρ ⊢M
   ρ (S z≢x Z)           =  Z
   ρ (S z≢x (S z≢y ∋z))  =  S z≢y (S z≢x ∋z)
 
+
+swapL : ∀ {Γ x xs y M A B D C}
+  → x ≢ xs
+  → xs ≢ y
+  → y ≢ x
+  → Γ , y ⦂ B , x ⦂ A , xs ⦂ D ⊢ M ⦂ C
+    --------------------------
+  → Γ , x ⦂ A , xs ⦂ D , y ⦂ B ⊢ M ⦂ C
+swapL {Γ} {x} {xs} {y} {M} {A} {B} {D} {C} x≢y xs≢y xs≢x ⊢M = rename ρ ⊢M
+  where
+  ρ : ∀ {z C}
+    → Γ , y ⦂ B , x ⦂ A , xs ⦂ D ∋ z ⦂ C
+      --------------------------
+    → Γ , x ⦂ A , xs ⦂ D , y ⦂ B ∋ z ⦂ C
+
+
+  -- Treba je dodat case še za ta primer, pls mr ahman
+  ρ Z                   =  S xs≢y Z
+  ρ (S z≢x Z)          =  Z
+  ρ (S z≢x (S z≢xs Z))           =  Z
+  --ρ (S z≢x (S z≢xs ∋z))  =  S z≢xs (S z≢x ∋z)
+  ρ (S z≢x (S z≢xs (S z≢y ∋z)))  =  S z≢y (S z≢x ( S z≢xs ∋z))
+
 {-
 _Substitution_:
 Say we have a closed term `V` of type `A`, and under the
@@ -251,8 +274,8 @@ subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) --zakaj drugi del tudi zamenjamo z V jem 
 
 subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y -- spremenit je blo treba na xs iz x' in odstranu sm ⊢W ker ma CaseL sam 3 argumente (zato je treba popravit tut spodno stvar)
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) ?  -- drop ⊢W
-... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap xs≢y {!   !})) --(subst ⊢V (swap x≢y ⊢N)) --W->N
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {!   !}  -- drop ⊢W
+... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swap xs≢y (swapL {!   !} {!   !} {!   !} {!   !}))) --(subst ⊢V (swap x≢y ⊢N)) --W->N
 ... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} --(subst ⊢V (swap x≢y ⊢N))
 ... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {!   !} --(subst ⊢V (swap x≢y ⊢N))
 
