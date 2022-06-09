@@ -81,7 +81,7 @@ case′ L [zero⇒ M |suc (` x) ⇒ N ]  =  case L [zero⇒ M |suc x ⇒ N ]
 
 caseL′_[emptyL⇒_∣_∷L_⇒_] : Term → Term  → (t : Term) →  {_ : T (var? t)} →(t₁ : Term) → {_ : T (var? t₁)} → Term  → Term  -- for every id we need one t so theh ∷L can be processed
 caseL′ L [emptyL⇒ M ∣(` y ) ∷L (` x) ⇒ N ]  =  caseL L [emptyL⇒ M ∣ y ∷L x ⇒ N ]
-2+2 = {!   !}
+
 
 μ′_⇒_ : (t : Term) → {_ : T (var? t)} → Term → Term
 μ′ (` x) ⇒ N  =  μ x ⇒ N
@@ -639,7 +639,7 @@ nope₂ (⊢ƛ (⊢` ∋x · ⊢` ∋x′))  =  contradiction (∋-functional �
 
 
 
-
+--Add some example for sum list that is append, podobno kot plus za natural numbers 
 
 
 

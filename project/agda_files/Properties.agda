@@ -26,10 +26,10 @@ V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 
 -- lists
 
--- V¬—→ V-emptyL     ()
--- V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
+V¬—→ V-emptyL     ()
+V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
---V¬—→ (V-∷L VW VM) (ξ-cons₂ VW M—→N) =  V¬—→ VW M—→N 
+V¬—→ (V-∷L VW VM) (ξ-cons₂ W—→N M—→N) = V¬—→ VW {!  !} 
 
 
 --terms that reduce are not values:
@@ -322,10 +322,9 @@ preserve (⊢μ ⊢M)                 (β-μ)            =  subst (⊢μ ⊢M) �
 preserve ⊢emptyL                  ()
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (preserve ⊢M M—→M′) ⊢N
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons₂ VM N—→N′)    =  ⊢cons ⊢M (preserve ⊢N N—→N′) 
-preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N --ta dela sam ta zadnji ne dela 
-preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M --ta dela 
-preserve (⊢caseL (⊢cons ⊢V ⊢W) ⊢M ⊢N) (β-cons VV VW)    =  {!   !} --(subst ⊢V ⊢N) (subst ⊢W ⊢N)
-
+preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N 
+preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M  
+preserve (⊢caseL (⊢cons ⊢E ⊢W) ⊢M ⊢N) (β-cons VE VW)    =  {!   !} --(subst ⊢V ⊢N) (subst ⊢W ⊢N)
 
 --Evaluation
 
