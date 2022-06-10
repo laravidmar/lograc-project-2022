@@ -13,8 +13,8 @@ This repository is set up as an Agda library and it contains:
   + `agda_files/`: This are the files that we have been working on
   + `Plfa_2_chapter/`: Here we have the documentation for chapter 2 of *Programming Language Foundations in Agda* 
 
-# EXTENSIONS OF PLFA-LISTS
-
+<!-- # EXTENSIONS OF PLFA-LISTS -->
+# Extensions of PLFA-lists
 ## Short description of our project
 
 We mainly worked on the following topics:
@@ -25,7 +25,7 @@ We mainly worked on the following topics:
 
 We looked at how natural numbers are encoded in PLFA, and then added lists based on the correspondence between:
 * Zero ⇒  [ ]
-* Suc  ⇒  \_∷L\_
+* Suc   ⇒  \_∷L\_
 * Case_[Zero⇒_|Suc_⇒_] ⇒ CaseL_[EmptyL⇒_∣_∷L_⇒_]
 
 
