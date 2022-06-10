@@ -23,7 +23,7 @@ We mainly worked on the following topics:
 
 
 We looked at how natural numbers are encoded in PLFA, and then added lists based on the correspondence between:
-* Zero&nbsp;&rarr; [ ]
+* Zero &nbsp;&rarr; [ ]
 * Suc &nbsp; &rarr; \_∷L\_
 * Case_[Zero⇒_|Suc_⇒_] &rarr; CaseL_[EmptyL⇒_∣_∷L_⇒_]
 
