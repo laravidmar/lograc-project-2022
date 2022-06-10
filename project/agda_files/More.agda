@@ -533,7 +533,7 @@ V¬—→ V-⟨ _ , VN ⟩ (ξ-⟨,⟩₂ _ N—→N′)  =  V¬—→ VN N—�
 --lists
 V¬—→ V-[]       ()
 V¬—→ (V-cons VM VN)   (ξ-∷₁ M—→M′)  =  V¬—→ VM M—→M′
-V¬—→ (V-cons VM VN)    (ξ-∷₂ M—→M′ N—→N′)  =  V¬—→ VM {! !} 
+-- wV¬—→ (V-cons VM VN)    (ξ-∷₂ M—→M′ N—→N′)  =  V¬—→ VM {! !} 
 
 
 
