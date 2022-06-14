@@ -29,7 +29,7 @@ V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 V¬—→ V-emptyL     ()
 V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
-V¬—→ (V-∷L VW VM) (ξ-cons₂ W—→N M—→N) = V¬—→ VW {!  !} 
+V¬—→ (V-∷L VW VM) (ξ-cons₂ W—→N M—→N) = V¬—→ VW {! !} 
 
 
 --terms that reduce are not values:
@@ -209,9 +209,9 @@ dropL {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
       -------------------------
     → Γ , x ⦂ B , x ⦂ D ∋ z ⦂ C
   ρ Z                 =  Z
-  ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) --⊥-elim (x≢x refl)
-  ρ (S z≢x (S _ ∋z))  =  S z≢x (S z≢x {! !})  --S z≢x ∋z
-  --ρ (S z≢x (S z≢x (S _ ∋z)))  =  {!   !} -- S z≢y (S z≢x ( S z≢xs ∋z))
+  ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) 
+  ρ (S z≢x (S _ ∋z))  =  S z≢x ( S z≢x {! !}) 
+  -- ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x {!   !}) -- We think this condition isn't necessery
 
 {-
 The _swap_ lemma asserts that a term which is well typed in a
@@ -292,7 +292,7 @@ subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | x
 ... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL ⊢N)  -- drop ⊢W
 ... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  (dropL ⊢N ) !} --(subst ⊢V (swap xs≢y (swapL {!   !} {!   !} {!   !} {!   !}))) --(subst ⊢V (swap x≢y ⊢N)) --W->N
 ... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  (dropL ⊢N)  !} --(subst ⊢V (swap x≢y ⊢N))
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swapL {! x≢y   !} {!   !} {!   !} ⊢N)) --(subst ⊢V (swap x≢y ⊢N))
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swapL {! x≢y  !} xs≢y {!  y≢x !} ⊢N)) --(subst ⊢V (swap x≢y ⊢N))
 
 --Preservation
 {-
