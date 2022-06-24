@@ -29,7 +29,7 @@ V¬—→ (V-suc VM) (ξ-suc M—→N) = V¬—→ VM M—→N
 V¬—→ V-emptyL     ()
 V¬—→ (V-∷L VM VM') (ξ-cons M—→N) = V¬—→ VM M—→N --we take fist value and tail of list
 --and cons changes the head of the list so if it is a value do not reduce
-V¬—→ (V-∷L VW VM) (ξ-cons₂ W—→N M—→N) = V¬—→ VW {! !} 
+V¬—→ (V-∷L VW VM) (ξ-cons₂ VN M—→N) = V¬—→ VM M—→N  
 
 
 --terms that reduce are not values:

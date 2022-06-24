@@ -64,7 +64,7 @@ data Term⁻ where
 --Lists
   `emptyL                  : Term⁻
   `_∷L_                    : Term⁻ → Term⁻  → Term⁻
-  caseL_[emptyL⇒_∣_∷L_⇒_]  : Term⁺ → Term⁻ → Id → Id → Term⁻ → Term⁻
+  `caseL_[emptyL⇒_∣_∷L_⇒_]  : Term⁺ → Term⁻ → Id → Id → Term⁻ → Term⁻
 
 
 -- Example
@@ -192,14 +192,17 @@ data _⊢_↓_ where
       ---------------
     → Γ ⊢ ` L ∷L M ↓ `List A
 
-  ⊢caseL : ∀ {Γ L M x xs N A}
+  ⊢caseL : ∀ {Γ L M x xs N A B}
     → Γ ⊢ L ↑ `List A
     → Γ ⊢ M ↓ B
     → Γ , x ⦂ A , xs ⦂ `List A ⊢ N ↓ B
       -------------------------------------
     → Γ ⊢ `caseL L [emptyL⇒ M ∣ x ∷L xs ⇒ N ] ↓ B
 
-
+{-
+The rule for `M ↑` requires the ability to decide whether two types
+are equal.
+-}
 _≟Tp_ : (A B : Type) → Dec (A ≡ B)
 `ℕ      ≟Tp `ℕ              =  yes refl
 `ℕ      ≟Tp (A ⇒ B)         =  no λ()
@@ -209,6 +212,13 @@ _≟Tp_ : (A B : Type) → Dec (A ≡ B)
 ...  | no A≢    | _         =  no λ{refl → A≢ refl}
 ...  | yes _    | no B≢     =  no λ{refl → B≢ refl}
 ...  | yes refl | yes refl  =  yes refl
+
+--lists 
+`List A ≟Tp `List A1            = yes {!  !} 
+`ℕ ≟Tp `List B                  = no λ() 
+`List A ≟Tp `ℕ                  = no λ() 
+`List A ≟Tp (B ⇒ B₁)            = no λ() 
+(A ⇒ A₁) ≟Tp `List B           = no λ() 
 
 
 
@@ -304,6 +314,7 @@ synthesize Γ (` x) with lookup Γ x
 synthesize Γ (L · M) with synthesize Γ L
 ... | no  ¬∃              =  no  (λ{ ⟨ _ , ⊢L  · _  ⟩  →  ¬∃ ⟨ _ , ⊢L ⟩ })
 ... | yes ⟨ `ℕ ,    ⊢L ⟩  =  no  (λ{ ⟨ _ , ⊢L′ · _  ⟩  →  ℕ≢⇒ (uniq-↑ ⊢L ⊢L′) })
+... | yes ⟨ `List fst , snd ⟩  = no {!   !}
 ... | yes ⟨ A ⇒ B , ⊢L ⟩ with inherit Γ M A
 ...    | no  ¬⊢M          =  no  (¬arg ⊢L ¬⊢M)
 ...    | yes ⊢M           =  yes ⟨ B , ⊢L · ⊢M ⟩
@@ -325,6 +336,7 @@ inherit Γ (`suc M) (A ⇒ B)  =  no  (λ())
 inherit Γ (`case L [zero⇒ M |suc x ⇒ N ]) A with synthesize Γ L
 ... | no ¬∃                 =  no  (λ{ (⊢case ⊢L  _ _) → ¬∃ ⟨ `ℕ , ⊢L ⟩})
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢case ⊢L′ _ _) → ℕ≢⇒ (uniq-↑ ⊢L′ ⊢L) })
+... | yes ⟨ `List fst , snd ⟩   = no {!   !}
 ... | yes ⟨ `ℕ ,    ⊢L ⟩ with inherit Γ M A
 ...    | no ¬⊢M             =  no  (λ{ (⊢case _ ⊢M _) → ¬⊢M ⊢M })
 ...    | yes ⊢M with inherit (Γ , x ⦂ `ℕ) N A
@@ -338,6 +350,18 @@ inherit Γ (M ↑) B with synthesize Γ M
 ... | yes ⟨ A , ⊢M ⟩ with A ≟Tp B
 ...   | no  A≢B             =  no  (¬switch ⊢M A≢B)
 ...   | yes A≡B             =  yes (⊢↑ ⊢M A≡B)
+inherit Γ `emptyL `ℕ       = no {!  !}
+inherit Γ (` M ∷L M₁) `ℕ     = no {!   !}
+inherit Γ (ƛ x ⇒ M) (`List A)    = {!   !}
+inherit Γ `zero (`List A)       = {!   !}
+inherit Γ (`suc M) (`List A)     = {!   !}
+inherit Γ `emptyL (`List A)       = {!   !}
+inherit Γ (` M ∷L M₁) (`List A)     = {!   !}
+inherit Γ `emptyL (A ⇒ A₁)     = {!   !}
+inherit Γ (` M ∷L M₁) (A ⇒ A₁)   = {!   !}
+inherit Γ `caseL x [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] `ℕ  = {!   !} 
+inherit Γ `caseL x [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (`List A) = {!   !}
+inherit Γ `caseL x [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (A ⇒ A₁) = {!   !}
 
 
 
@@ -474,7 +498,7 @@ _ = refl
 ∥_∥Tp : Type → DB.Type
 ∥ `ℕ ∥Tp             =  DB.`ℕ
 ∥ A ⇒ B ∥Tp          =  ∥ A ∥Tp DB.⇒ ∥ B ∥Tp
-
+∥ `List x ∥Tp        = DB.`List ∥ x ∥Tp
 
 
 ∥_∥Cx : Context → DB.Context
@@ -501,6 +525,9 @@ _ = refl
 ∥ ⊢case ⊢L ⊢M ⊢N ∥⁻  =  DB.case ∥ ⊢L ∥⁺ ∥ ⊢M ∥⁻ ∥ ⊢N ∥⁻
 ∥ ⊢μ ⊢M ∥⁻           =  DB.μ ∥ ⊢M ∥⁻
 ∥ ⊢↑ ⊢M refl ∥⁻      =  ∥ ⊢M ∥⁺
+∥ ⊢emptyL ∥⁻   = {!  !} 
+∥ ⊢∷L ⊢M ⊢N ∥⁻ = {!  !} 
+∥ ⊢caseL ⊢L ⊢M ⊢N ∥⁻  = {!   !} 
 
 
 _ : ∥ ⊢2+2 ∥⁺ ≡ DB.2+2
