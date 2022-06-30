@@ -350,18 +350,18 @@ inherit Γ (M ↑) B with synthesize Γ M
 ... | yes ⟨ A , ⊢M ⟩ with A ≟Tp B
 ...   | no  A≢B             =  no  (¬switch ⊢M A≢B)
 ...   | yes A≡B             =  yes (⊢↑ ⊢M A≡B)
-inherit Γ `emptyL `ℕ       = no {!  !}
-inherit Γ (` M ∷L M₁) `ℕ     = no {!   !}
-inherit Γ (ƛ x ⇒ M) (`List A)    = {!   !}
+inherit Γ `emptyL `ℕ      =  yes {! !}
+inherit Γ (` M ∷L M₁) `ℕ     = {!   !}
+inherit Γ (ƛ x ⇒ M) (`List A)    = no (λ())
 inherit Γ `zero (`List A)       = {!   !}
 inherit Γ (`suc M) (`List A)     = {!   !}
 inherit Γ `emptyL (`List A)       = {!   !}
 inherit Γ (` M ∷L M₁) (`List A)     = {!   !}
 inherit Γ `emptyL (A ⇒ A₁)     = {!   !}
 inherit Γ (` M ∷L M₁) (A ⇒ A₁)   = {!   !}
-inherit Γ `caseL x [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] `ℕ  = {!   !} 
-inherit Γ `caseL x [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (`List A) = {!   !}
-inherit Γ `caseL x [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (A ⇒ A₁) = {!   !}
+inherit Γ `caseL L [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] `ℕ  = {!   !} 
+inherit Γ `caseL L [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (`List A) = {!   !}
+inherit Γ `caseL L [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (A ⇒ A₁) = {!   !}
 
 
 
@@ -544,4 +544,4 @@ _ = refl
 
 
 
--- To je še treba nardit
+-- To je še treba nardit 
