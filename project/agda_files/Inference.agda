@@ -47,6 +47,18 @@ data Term⁻ : Set
 The syntax of terms is defined by mutual recursion.
 We use `Term⁺` and `Term⁻`
 for terms with synthesized and inherited types, respectively.
+
+Γ ⊢ M ↑ A
+    Γ ⊢ M ↓ A
+
+The first of these _synthesises_ the type of a term, as before,
+while the second _inherits_ the type.  In the first, the context
+and term are inputs and the type is an output; while in the
+second, all three of the context, term, and type are inputs.
+
+, M ↑ for this purpose. The typing judgment checks that the inherited and synthesised types match.
+
+M ↓ A   The typing judgment returns A as the synthesized type of the term as a whole, as well as using it as the inherited type for M.
 -}
 
 data Term⁺ where
@@ -214,7 +226,10 @@ _≟Tp_ : (A B : Type) → Dec (A ≡ B)
 ...  | yes refl | yes refl  =  yes refl
 
 --lists 
-`List A ≟Tp `List A1            = yes {!  !} 
+`List A ≟Tp `List A′ 
+  with A ≟Tp A′     
+...  | no A≢             = no (λ{refl → A≢ refl}) 
+...  | yes refl           = yes refl  
 `ℕ ≟Tp `List B                  = no λ() 
 `List A ≟Tp `ℕ                  = no λ() 
 `List A ≟Tp (B ⇒ B₁)            = no λ() 
@@ -231,6 +246,10 @@ rng≡ refl = refl
 
 ℕ≢⇒ : ∀ {A B} → `ℕ ≢ A ⇒ B
 ℕ≢⇒ ()
+
+--adding that ⇒ does not hold for lists
+List≢⇒ : ∀ {A B C} → `List A ≢ C ⇒ B
+List≢⇒ ()
 
 
 uniq-∋ : ∀ {Γ x A B} → Γ ∋ x ⦂ A → Γ ∋ x ⦂ B → A ≡ B
@@ -314,7 +333,7 @@ synthesize Γ (` x) with lookup Γ x
 synthesize Γ (L · M) with synthesize Γ L
 ... | no  ¬∃              =  no  (λ{ ⟨ _ , ⊢L  · _  ⟩  →  ¬∃ ⟨ _ , ⊢L ⟩ })
 ... | yes ⟨ `ℕ ,    ⊢L ⟩  =  no  (λ{ ⟨ _ , ⊢L′ · _  ⟩  →  ℕ≢⇒ (uniq-↑ ⊢L ⊢L′) })
-... | yes ⟨ `List fst , snd ⟩  = no {!   !}
+... | yes ⟨ `List A , ⊢L ⟩  = no λ{ ⟨ _ , ⊢L′ · _  ⟩  →  List≢⇒ (uniq-↑ ⊢L ⊢L′) }
 ... | yes ⟨ A ⇒ B , ⊢L ⟩ with inherit Γ M A
 ...    | no  ¬⊢M          =  no  (¬arg ⊢L ¬⊢M)
 ...    | yes ⊢M           =  yes ⟨ B , ⊢L · ⊢M ⟩
@@ -329,18 +348,20 @@ inherit Γ (ƛ x ⇒ N) (A ⇒ B) with inherit (Γ , x ⦂ A) N B
 ... | yes ⊢N                =  yes (⊢ƛ ⊢N)
 inherit Γ `zero `ℕ          =  yes ⊢zero
 inherit Γ `zero (A ⇒ B)     =  no  (λ())
+inherit Γ `zero (`List A)       = no (λ())
 inherit Γ (`suc M) `ℕ with inherit Γ M `ℕ
 ... | no ¬⊢M                =  no  (λ{ (⊢suc ⊢M)  →  ¬⊢M ⊢M })
 ... | yes ⊢M                =  yes (⊢suc ⊢M)
 inherit Γ (`suc M) (A ⇒ B)  =  no  (λ())
+inherit Γ (`suc M) (`List A)     = no (λ())
 inherit Γ (`case L [zero⇒ M |suc x ⇒ N ]) A with synthesize Γ L
 ... | no ¬∃                 =  no  (λ{ (⊢case ⊢L  _ _) → ¬∃ ⟨ `ℕ , ⊢L ⟩})
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢case ⊢L′ _ _) → ℕ≢⇒ (uniq-↑ ⊢L′ ⊢L) })
-... | yes ⟨ `List fst , snd ⟩   = no {!   !}
+... | yes ⟨ `List A , ⊢L ⟩   = no {!   !}
 ... | yes ⟨ `ℕ ,    ⊢L ⟩ with inherit Γ M A
 ...    | no ¬⊢M             =  no  (λ{ (⊢case _ ⊢M _) → ¬⊢M ⊢M })
 ...    | yes ⊢M with inherit (Γ , x ⦂ `ℕ) N A
-...       | no ¬⊢N          =  no  (λ{ (⊢case _ _ ⊢N) → ¬⊢N ⊢N })
+...       | no ¬⊢N          =  no  (λ{ (⊢case _ _ ⊢N) → ¬⊢N ⊢N }) 
 ...       | yes ⊢N          =  yes (⊢case ⊢L ⊢M ⊢N)
 inherit Γ (μ x ⇒ N) A with inherit (Γ , x ⦂ A) N A
 ... | no ¬⊢N                =  no  (λ{ (⊢μ ⊢N) → ¬⊢N ⊢N })
@@ -350,18 +371,25 @@ inherit Γ (M ↑) B with synthesize Γ M
 ... | yes ⟨ A , ⊢M ⟩ with A ≟Tp B
 ...   | no  A≢B             =  no  (¬switch ⊢M A≢B)
 ...   | yes A≡B             =  yes (⊢↑ ⊢M A≡B)
-inherit Γ `emptyL `ℕ      =  yes {! !}
-inherit Γ (` M ∷L M₁) `ℕ     = {!   !}
+--lists
 inherit Γ (ƛ x ⇒ M) (`List A)    = no (λ())
-inherit Γ `zero (`List A)       = {!   !}
-inherit Γ (`suc M) (`List A)     = {!   !}
-inherit Γ `emptyL (`List A)       = {!   !}
-inherit Γ (` M ∷L M₁) (`List A)     = {!   !}
-inherit Γ `emptyL (A ⇒ A₁)     = {!   !}
-inherit Γ (` M ∷L M₁) (A ⇒ A₁)   = {!   !}
-inherit Γ `caseL L [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] `ℕ  = {!   !} 
-inherit Γ `caseL L [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (`List A) = {!   !}
-inherit Γ `caseL L [emptyL⇒ M ∣ x₁ ∷L x₂ ⇒ M₁ ] (A ⇒ A₁) = {!   !}
+inherit Γ `emptyL `ℕ      =   no (λ())
+inherit Γ `emptyL (A ⇒ A₁)     = no (λ())
+inherit Γ `emptyL (`List A)       = yes ⊢emptyL
+inherit Γ (` M ∷L M₁) `ℕ     = no (λ())
+inherit Γ (` M ∷L M₁) (`List A)  = {!   !} 
+inherit Γ (` M ∷L M₁) (A ⇒ A₁)   = no (λ())
+
+inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) A with synthesize Γ L
+... | no ¬∃                 = no λ{ (⊢caseL ⊢L  _ _) → ¬∃ ⟨ {!  !} , ⊢L ⟩} 
+... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢caseL ⊢L′ _ _) → List≢⇒ (uniq-↑ ⊢L′ ⊢L) })
+... | yes ⟨ `ℕ , ⊢L ⟩   = no {!   !}
+... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M A
+...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M {!  !} }
+...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N A 
+...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!   !} }) 
+...       | yes ⊢N          =  yes (⊢caseL ⊢L {! !} {!   !}) 
+
 
 
 
@@ -497,8 +525,9 @@ _ = refl
 
 ∥_∥Tp : Type → DB.Type
 ∥ `ℕ ∥Tp             =  DB.`ℕ
+∥ `List A ∥Tp        = DB.`List ∥ A ∥Tp
 ∥ A ⇒ B ∥Tp          =  ∥ A ∥Tp DB.⇒ ∥ B ∥Tp
-∥ `List x ∥Tp        = DB.`List ∥ x ∥Tp
+
 
 
 ∥_∥Cx : Context → DB.Context
@@ -525,9 +554,10 @@ _ = refl
 ∥ ⊢case ⊢L ⊢M ⊢N ∥⁻  =  DB.case ∥ ⊢L ∥⁺ ∥ ⊢M ∥⁻ ∥ ⊢N ∥⁻
 ∥ ⊢μ ⊢M ∥⁻           =  DB.μ ∥ ⊢M ∥⁻
 ∥ ⊢↑ ⊢M refl ∥⁻      =  ∥ ⊢M ∥⁺
-∥ ⊢emptyL ∥⁻   = {!  !} 
-∥ ⊢∷L ⊢M ⊢N ∥⁻ = {!  !} 
-∥ ⊢caseL ⊢L ⊢M ⊢N ∥⁻  = {!   !} 
+--lists
+∥ ⊢emptyL ∥⁻   = DB.`[] 
+∥ ⊢∷L ⊢M ⊢N ∥⁻ = DB.`_∷L_ ∥ ⊢M ∥⁻ ∥ ⊢N ∥⁻ 
+∥ ⊢caseL ⊢L ⊢M ⊢N ∥⁻  = DB.`caseL  ∥ ⊢L ∥⁺ ∥ ⊢M ∥⁻ ∥ ⊢N ∥⁻ 
 
 
 _ : ∥ ⊢2+2 ∥⁺ ≡ DB.2+2

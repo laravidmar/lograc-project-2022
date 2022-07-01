@@ -543,7 +543,7 @@ data _—→_ : ∀ {Γ A} → (Γ ⊢ A) → (Γ ⊢ A) → Set where
     → Value V
     → Value W
       ----------------------------
-    → caseL (` V ∷L W ) M N —→ (N [ rename weakenL W ] [ V ])  --isto kot v more, mora bit ampak ne dela z njim
+    → caseL (` V ∷L W ) M N —→ (N [ rename weakenL W ] [ V ])  
 
 
 
