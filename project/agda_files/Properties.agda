@@ -210,9 +210,9 @@ dropL {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
     → Γ , x ⦂ B , x ⦂ D ∋ z ⦂ C
   ρ Z                 =  Z
   ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) 
-  ρ (S z≢x (S _ ∋z))  =  S z≢x ( S z≢x {! !}) 
-  -- ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x {!   !}) -- We think this condition isn't necessery
-
+  ρ (S z≢x (S _ Z))  =  S z≢x ( S z≢x (⊥-elim (z≢x refl))) 
+  ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x ∋z) 
+  
 {-
 The _swap_ lemma asserts that a term which is well typed in a
 context remains well typed if we swap two variables.
@@ -286,13 +286,13 @@ subst {x = y} ⊢V (⊢μ {x = x} ⊢M) with x ≟ y
 
 --lists
 subst ⊢V ⊢emptyL        =  ⊢emptyL
-subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) --zakaj drugi del tudi zamenjamo z V jem 
+subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) 
 
-subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y -- spremenit je blo treba na xs iz x' in odstranu sm ⊢W ker ma CaseL sam 3 argumente (zato je treba popravit tut spodno stvar)
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL ⊢N)  -- drop ⊢W
-... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  (dropL ⊢N ) !} --(subst ⊢V (swap xs≢y (swapL {!   !} {!   !} {!   !} {!   !}))) --(subst ⊢V (swap x≢y ⊢N)) --W->N
-... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  (dropL ⊢N)  !} --(subst ⊢V (swap x≢y ⊢N))
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swapL {! x≢y  !} xs≢y {!  y≢x !} ⊢N)) --(subst ⊢V (swap x≢y ⊢N))
+subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y 
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) ((dropL ⊢N))   
+... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} 
+... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} 
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst {!   !} {!   !})   
 
 --Preservation
 {-
@@ -324,7 +324,7 @@ preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (pre
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons₂ VM N—→N′)    =  ⊢cons ⊢M (preserve ⊢N N—→N′) 
 preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N 
 preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M  
-preserve (⊢caseL (⊢cons ⊢E ⊢W) ⊢M ⊢N) (β-cons VE VW)    =  {!   !} --(subst ⊢V ⊢N) (subst ⊢W ⊢N)
+preserve (⊢caseL (⊢cons ⊢E ⊢W) ⊢M ⊢N) (β-cons VE VW)    = {!   !}  -- (subst ⊢E ⊢N) (subst ⊢W ⊢N)
 
 --Evaluation
 
@@ -717,10 +717,13 @@ cong₅ f refl refl refl refl refl = refl
 
 -- --lists
 
--- -- det (ξ-cons M—→M′)  (ξ-cons M—→M″)    =  cong `_∷L_ (det M—→M′ M—→M″)
--- -- det (ξ-cons₂ VL M—→M′)  (ξ-cons₂ VL M—→M″)    =  cong `_∷L_ (det M—→M′ M—→M″)
--- -- det (ξ-caseL L—→L′) (ξ-caseL L—→L″)   =  cong₄ caseL_[emptyL⇒_∣_∶∶L_⇒_]
---                                           --  (det L—→L′ L—→L″) refl refl refl  
+-- det (ξ-cons M—→M′)  (ξ-cons M—→M″)    =  {!   !}  --cong `_∷L_ (det M—→M′ M—→M″)
+-- det (ξ-cons₂ VL M—→M′)  (ξ-cons₂ WL M—→M″)    =  {!   !} --cong `_∷L_ (det M—→M′ M—→M″)
+-- det (ξ-cons M—→M′)  (ξ-cons₂ WL M—→M″)    =  {!   !} --cong `_∷L_ (det M—→M′ M—→M″)
+-- det (ξ-cons₂ VL M—→M′)  (ξ-cons M—→M″ )    =  {!   !} --cong `_∷L_ (det M—→M′ M—→M″)
+-- det (ξ-caseL L—→L′) (ξ-caseL L—→L″)   = {!   !}
+--cong₅ caseL_[emptyL⇒_∣_∶∶L_⇒_]
+--                                            (det L—→L′ L—→L″) refl refl refl  
 -- det (ξ-caseL L—→L′) β-emptyL           =  ⊥-elim (V¬—→ V-emptyL L—→L′)
 -- det (ξ-caseL L—→L′) (β-cons VL VW)       =  ⊥-elim (V¬—→ (V-∷L VL VW) L—→L′)
 -- det β-emptyL         (ξ-caseL M—→M″)   =  ⊥-elim (V¬—→ V-emptyL M—→M″)
