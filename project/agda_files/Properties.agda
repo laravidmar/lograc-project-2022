@@ -211,7 +211,7 @@ dropL {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
   ρ Z                 =  Z
   ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) 
   ρ (S z≢x (S _ Z))  =  S z≢x ( S z≢x (⊥-elim (z≢x refl))) 
-  ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x ∋z) 
+  ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x ∋z)
   
 {-
 The _swap_ lemma asserts that a term which is well typed in a
@@ -292,7 +292,7 @@ subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | x
 ... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) ((dropL ⊢N))   
 ... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} 
 ... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} 
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst {!   !} {!   !})   
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swapL (λ x₁ → ⊥-elim xs≢y {!  !})  xs≢y (λ x₁ → {!   !}) ⊢N))   
 
 --Preservation
 {-
