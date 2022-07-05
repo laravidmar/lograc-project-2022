@@ -758,12 +758,11 @@ det β-μ β-μ = refl
 
 -- List
 
-det (ξ-cons M—→M″) (ξ-cons M—→M′) = {!   !} -- cong `_∷L_ (det M—→M′ M—→M″) -- Sploh noče tega `_∷L_  zagrabit
+det (ξ-cons M—→M″) (ξ-cons M—→M′) = {!   !} {!   !} -- cong `_∷L_ (det M—→M′ M—→M″) -- Sploh noče tega `_∷L_  zagrabit
 det (ξ-cons p) (ξ-cons₂ x q) = {!   !}
 det (ξ-cons₂ x p) (ξ-cons q) = {!   !}
-det (ξ-cons₂ xw p) (ξ-cons₂ x pz) = {!   !} -- cong `_∷L_ (det M—→M′ M—→M″)
-det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = {! cong₅ caseL_[emptyL⇒_∣_∶∶L_⇒_]
-                                           (det L—→L′ L—→L″) refl refl refl refl   !}
+det (ξ-cons₂ xw p) (ξ-cons₂ x pz) = cong {!  !} {!   !} -- cong `_∷L_ (det M—→M′ M—→M″)
+det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = cong₅ caseL_[emptyL⇒_∣_∷L_⇒_] (det L—→L′ L—→L″) refl refl refl refl 
 
 {-
 {! cong₄ caseL_[emptyL⇒_∣_∶∶L_⇒_]

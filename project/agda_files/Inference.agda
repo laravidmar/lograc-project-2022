@@ -391,10 +391,10 @@ inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢caseL ⊢L′ _ _) → List≢⇒ (uniq-↑ ⊢L′ ⊢L) })
 ... | yes ⟨ `ℕ , ⊢L ⟩   = no λ{ (⊢caseL ⊢L′ _ _) → {!   !} } 
 ... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M B
-...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M {!  !} }
+...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M ⊢M }
 ...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N B
-...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!   !} }) 
-...       | yes ⊢N          =  yes (⊢caseL ⊢L {! !} {! !}) 
+...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!  !} }) 
+...       | yes ⊢N          =  yes (⊢caseL ⊢L ⊢M ⊢N) 
 
 
 
