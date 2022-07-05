@@ -1,7 +1,7 @@
 module agda_files.Properties where
 
 open import Relation.Binary.PropositionalEquality
-  using (_≡_; _≢_; refl; sym; cong; cong₂)
+  using (_≡_; _≢_; refl; sym; ≢-sym; cong; cong₂)
 open import Data.String using (String; _≟_)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Empty using (⊥; ⊥-elim)
@@ -198,11 +198,11 @@ drop {Γ} {x} {M} {A} {B} {C} ⊢M = rename ρ ⊢M
   ρ (S z≢x (S _ ∋z))  = S z≢x ∋z
 
 
-dropL : ∀ {Γ x M A B D C}
+dropL₁ : ∀ {Γ x M A B D C}
   → Γ , x ⦂ A , x ⦂ B , x ⦂ D ⊢ M ⦂ C
     --------------------------
   → Γ , x ⦂ B , x ⦂ D ⊢ M ⦂ C
-dropL {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
+dropL₁ {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
   where
   ρ : ∀ {z C}
     → Γ , x ⦂ A , x ⦂ B , x ⦂ D ∋ z ⦂ C
@@ -212,6 +212,39 @@ dropL {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
   ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) 
   ρ (S z≢x (S _ Z))  =  S z≢x ( S z≢x (⊥-elim (z≢x refl))) 
   ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x ∋z)
+
+
+dropL₂ : ∀ {Γ x y M A B D C}
+  → Γ , x ⦂ A , x ⦂ B , y ⦂ D ⊢ M ⦂ C
+    --------------------------
+  → Γ , x ⦂ B , y ⦂ D ⊢ M ⦂ C
+dropL₂ {Γ} {x} {y} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
+  where
+  ρ : ∀ {z C}
+    → Γ , x ⦂ A , x ⦂ B , y ⦂ D ∋ z ⦂ C
+      -------------------------
+    → Γ , x ⦂ B , y ⦂ D ∋ z ⦂ C
+  ρ Z                  =  Z
+  ρ (S x≢y Z)          =  S x≢y Z            
+  ρ (S z≢y (S x≢x Z))  =  ⊥-elim (x≢x refl)  
+  ρ (S z≢y (S z≢x (S _ ∋z)))  =  S z≢y (S z≢x ∋z)
+  
+
+dropL₃ : ∀ {Γ x y M A B D C}
+  → Γ , y ⦂ A , x ⦂ B , y ⦂ D ⊢ M ⦂ C
+    --------------------------
+  → Γ , x ⦂ B , y ⦂ D ⊢ M ⦂ C
+dropL₃ {Γ} {x} {y} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
+  where
+  ρ : ∀ {z C}
+    → Γ , y ⦂ A , x ⦂ B , y ⦂ D ∋ z ⦂ C
+      -------------------------
+    → Γ , x ⦂ B , y ⦂ D ∋ z ⦂ C
+  ρ Z                  =  Z
+  ρ (S x≢y Z)          =  S x≢y Z  
+  ρ (S z≢y (S x≢x Z))  =  ⊥-elim (z≢y refl)
+  ρ (S z≢y (S z≢x (S _ ∋z)))  =  S z≢y (S z≢x ∋z)
+  
   
 {-
 The _swap_ lemma asserts that a term which is well typed in a
@@ -234,13 +267,12 @@ swap {Γ} {x} {y} {M} {A} {B} {C} x≢y ⊢M = rename ρ ⊢M
 
 
 swapL : ∀ {Γ x xs y M A B D C}
-  → x ≢ xs
   → xs ≢ y
   → y ≢ x
   → Γ , y ⦂ B , x ⦂ A , xs ⦂ D ⊢ M ⦂ C
     --------------------------
   → Γ , x ⦂ A , xs ⦂ D , y ⦂ B ⊢ M ⦂ C
-swapL {Γ} {x} {xs} {y} {M} {A} {B} {D} {C} x≢xs xs≢y y≢x ⊢M = rename ρ ⊢M
+swapL {Γ} {x} {xs} {y} {M} {A} {B} {D} {C} xs≢y y≢x ⊢M = rename ρ ⊢M
   where
   ρ : ∀ {z C}
     → Γ , y ⦂ B , x ⦂ A , xs ⦂ D ∋ z ⦂ C
@@ -248,8 +280,8 @@ swapL {Γ} {x} {xs} {y} {M} {A} {B} {D} {C} x≢xs xs≢y y≢x ⊢M = rename ρ
     → Γ , x ⦂ A , xs ⦂ D , y ⦂ B ∋ z ⦂ C
 
   ρ Z                   =  S xs≢y Z
-  ρ (S z≢x Z)          =  S (λ x≢y → y≢x ((sym x≢y ))) (S x≢xs Z)
-  ρ (S z≢x (S z≢xs Z))           =  Z
+  ρ (S x≢xs Z)          =  S (λ x≢y → y≢x ((sym x≢y ))) (S x≢xs Z)
+  ρ (S y≢xs (S y≢x Z))           =  Z
   ρ (S z≢x (S z≢xs (S z≢y ∋z)))  =  S z≢y (S z≢x ( S z≢xs ∋z))
 
 {-
@@ -289,10 +321,10 @@ subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    = ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) 
 
 subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y 
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL ⊢N)   
-... | yes refl | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {! dropL   !}
-... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  !} 
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {!   !} --(swapL (λ x₁ → ⊥-elim xs≢y {!  !})  xs≢y (λ x₁ → {!   !}) ⊢N)  
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL₁ ⊢N)   
+... | yes refl | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL₂ ⊢N)
+... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL₃ ⊢N) 
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst {x = y} ⊢V (swapL (xs≢y) ((≢-sym x≢y)) (⊢N))) 
 
 --Preservation
 {-
@@ -324,7 +356,19 @@ preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (pre
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons₂ VM N—→N′)    =  ⊢cons ⊢M (preserve ⊢N N—→N′) 
 preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N 
 preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M  
-preserve (⊢caseL (⊢cons ⊢E ⊢W) ⊢M ⊢N) (β-cons VE VW)    = {!   !}  -- (subst ⊢E ⊢N) (subst ⊢W ⊢N)
+preserve (⊢caseL (⊢cons {M = E} ⊢E ⊢L) ⊢M ⊢N) (β-cons VE VL)    = subst ⊢L (subst ⊢E (swap {!   !} ⊢N))  -- we need to proof that xs ≢ x in general
+
+-- Something like this 
+{-
+
+lemmaₚ : Γ ++ (∅ , x ⦂ A , y ⦂ B) ++ Γ' ⊢ M ⦂ A → x ≢ y     -- We need to proof this and use it above
+
+-- where ++ is defined in lamda something like that
+
+Γ ++ ∅ = Γ
+Γ ++ (Γ' , x ⦂ A) = (Γ ++ Γ') , x ⦂ A
+
+-}
 
 --Evaluation
 
@@ -690,6 +734,51 @@ cong₅ : ∀ {A B C D E F : Set} (f : A → B → C → D → E → F)
 cong₅ f refl refl refl refl refl = refl
 
 
+det : ∀ {M M′ M″}
+  → (M —→ M′)
+  → (M —→ M″)
+    --------
+  → M′ ≡ M″
+det (ξ-·₁ L—→L′) (ξ-·₁ L—→L″) = cong₂ _·_ (det L—→L′ L—→L″) refl
+det (ξ-·₁ L—→L′) (ξ-·₂ VL M—→M″) = ⊥-elim (V¬—→ VL L—→L′)
+det (ξ-·₂ VL _) (ξ-·₁ L—→L″) = ⊥-elim (V¬—→ VL L—→L″)
+det (ξ-·₂ _ M—→M′) (ξ-·₂ _ M—→M″) = cong₂ _·_ refl (det M—→M′ M—→M″)
+det (ξ-·₂ _ M—→M′) (β-ƛ VM) = ⊥-elim (V¬—→ VM M—→M′)
+det (β-ƛ VM) (ξ-·₂ _ M—→M″) = ⊥-elim (V¬—→ VM M—→M″)
+det (β-ƛ _) (β-ƛ _) = refl
+det (ξ-suc M—→M′) (ξ-suc M—→M″) = cong `suc_ (det M—→M′ M—→M″) 
+det (ξ-case L—→L′) (ξ-case L—→L″) = cong₄ case_[zero⇒_|suc_⇒_]
+                                          (det L—→L′ L—→L″) refl refl refl
+det (ξ-case L—→L′) (β-suc VL) = ⊥-elim (V¬—→ (V-suc VL) L—→L′)
+det β-zero β-zero = refl
+det (β-suc VL) (ξ-case L—→L″) = ⊥-elim (V¬—→ (V-suc VL) L—→L″)
+det (β-suc _) (β-suc _) = refl
+det β-μ β-μ = refl
+
+
+-- List
+
+det (ξ-cons M—→M″) (ξ-cons M—→M′) = {!   !} -- cong `_∷L_ (det M—→M′ M—→M″) -- Sploh noče tega `_∷L_  zagrabit
+det (ξ-cons p) (ξ-cons₂ x q) = {!   !}
+det (ξ-cons₂ x p) (ξ-cons q) = {!   !}
+det (ξ-cons₂ xw p) (ξ-cons₂ x pz) = {!   !} -- cong `_∷L_ (det M—→M′ M—→M″)
+det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = {! cong₅ caseL_[emptyL⇒_∣_∶∶L_⇒_]
+                                           (det L—→L′ L—→L″) refl refl refl refl   !}
+
+{-
+{! cong₄ caseL_[emptyL⇒_∣_∶∶L_⇒_]
+                                              (det L—→L′ L—→L″) refl refl refl   !}
+-}
+
+det (ξ-caseL L—→L′) (β-cons VL VW) = ⊥-elim (V¬—→ (V-∷L VL VW) L—→L′)
+det β-emptyL β-emptyL = refl
+det (β-cons VL VW) (ξ-caseL L—→L″) = ⊥-elim (V¬—→ (V-∷L VL VW) L—→L″)
+det (β-cons _ _) (β-cons _ _) = refl
+
+
+
+
+
 -- det : ∀ {M M′ M″}
 --   → (M —→ M′)
 --   → (M —→ M″)
@@ -728,4 +817,4 @@ cong₅ f refl refl refl refl refl = refl
 
 
 
--- Narejena 50% (Treba popravit par stvari)
+-- Narejena 90% (Treba popravit par stvari)

@@ -371,26 +371,28 @@ inherit Γ (M ↑) B with synthesize Γ M
 ... | yes ⟨ A , ⊢M ⟩ with A ≟Tp B
 ...   | no  A≢B             =  no  (¬switch ⊢M A≢B)
 ...   | yes A≡B             =  yes (⊢↑ ⊢M A≡B)
+
+
 --lists
 inherit Γ (ƛ x ⇒ M) (`List A)    = no (λ())
 inherit Γ `emptyL `ℕ      =   no (λ())
 inherit Γ `emptyL (A ⇒ A₁)     = no (λ())
 inherit Γ `emptyL (`List A)       = yes ⊢emptyL
-inherit Γ (` M ∷L M₁) `ℕ     = no (λ())
-inherit Γ (` M ∷L M₁) (`List A)   with inherit Γ M A 
-... | no  ¬⊢M                = no (λ{ (⊢∷L ⊢M ⊢M₁ )  →  ¬⊢M ⊢M })
-... | yes ⊢M   with inherit Γ M₁ A
-...   | no ¬⊢M₁             =  no (λ{ (⊢∷L ⊢M ⊢M₁ )  → ¬⊢M₁ {! !} }) --i need to swich, m1 is now in list and needs to be in A (how to swich?)
-...   | yes ⊢M₁             = yes (⊢∷L ⊢M {!  !}) -- the same problem, just reverse 
-inherit Γ (` M ∷L M₁) (A ⇒ A₁)   = no (λ())
+inherit Γ (` M ∷L L) `ℕ     = no (λ())
+inherit Γ (` M ∷L L) (`List A)   with inherit Γ M A 
+... | no  ¬⊢M                = no (λ{ (⊢∷L ⊢M ⊢L )  →  ¬⊢M ⊢M })
+... | yes ⊢M   with inherit Γ L (`List A)
+...   | no ¬⊢L             =  no (λ{ (⊢∷L ⊢M ⊢L )  → ¬⊢L ⊢L })
+...   | yes ⊢L             = yes (⊢∷L ⊢M ⊢L) 
+inherit Γ (` M ∷L L) (A ⇒ A₁)   = no (λ())
 
 inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L
-... | no ¬∃                 = no λ{ (⊢caseL ⊢L  _ _) → ¬∃ ⟨ `List {!  !} , ⊢L ⟩} 
+... | no ¬∃                 = no λ{ (⊢caseL ⊢L  _ _) → ¬∃ ⟨ `List {!   !} , ⊢L ⟩} 
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢caseL ⊢L′ _ _) → List≢⇒ (uniq-↑ ⊢L′ ⊢L) })
 ... | yes ⟨ `ℕ , ⊢L ⟩   = no λ{ (⊢caseL ⊢L′ _ _) → {!   !} } 
-... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M A
+... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M B
 ...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M {!  !} }
-...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N A 
+...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N B
 ...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!   !} }) 
 ...       | yes ⊢N          =  yes (⊢caseL ⊢L {! !} {! !}) 
 
