@@ -286,13 +286,13 @@ subst {x = y} ⊢V (⊢μ {x = x} ⊢M) with x ≟ y
 
 --lists
 subst ⊢V ⊢emptyL        =  ⊢emptyL
-subst ⊢V (⊢cons ⊢M ⊢N)    =  ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) 
+subst ⊢V (⊢cons ⊢M ⊢N)    = ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) 
 
 subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y 
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) ((dropL ⊢N))   
-... | yes refl | no  xs≢y      =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} 
-... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!   !} 
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst ⊢V (swapL (λ x₁ → ⊥-elim xs≢y {!  !})  xs≢y (λ x₁ → {!   !}) ⊢N))   
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL ⊢N)   
+... | yes refl | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {! dropL   !}
+... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M)  {!  !} 
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) {!   !} --(swapL (λ x₁ → ⊥-elim xs≢y {!  !})  xs≢y (λ x₁ → {!   !}) ⊢N)  
 
 --Preservation
 {-
@@ -714,23 +714,6 @@ cong₅ f refl refl refl refl refl = refl
 -- det (β-suc VL)     (ξ-case L—→L″)   =  ⊥-elim (V¬—→ (V-suc VL) L—→L″)
 -- det (β-suc _)      (β-suc _)        =  refl
 -- det β-μ            β-μ              =  refl
-
--- --lists
-
--- det (ξ-cons M—→M′)  (ξ-cons M—→M″)    =  {!   !}  --cong `_∷L_ (det M—→M′ M—→M″)
--- det (ξ-cons₂ VL M—→M′)  (ξ-cons₂ WL M—→M″)    =  {!   !} --cong `_∷L_ (det M—→M′ M—→M″)
--- det (ξ-cons M—→M′)  (ξ-cons₂ WL M—→M″)    =  {!   !} --cong `_∷L_ (det M—→M′ M—→M″)
--- det (ξ-cons₂ VL M—→M′)  (ξ-cons M—→M″ )    =  {!   !} --cong `_∷L_ (det M—→M′ M—→M″)
--- det (ξ-caseL L—→L′) (ξ-caseL L—→L″)   = {!   !}
---cong₅ caseL_[emptyL⇒_∣_∶∶L_⇒_]
---                                            (det L—→L′ L—→L″) refl refl refl  
--- det (ξ-caseL L—→L′) β-emptyL           =  ⊥-elim (V¬—→ V-emptyL L—→L′)
--- det (ξ-caseL L—→L′) (β-cons VL VW)       =  ⊥-elim (V¬—→ (V-∷L VL VW) L—→L′)
--- det β-emptyL         (ξ-caseL M—→M″)   =  ⊥-elim (V¬—→ V-emptyL M—→M″)
--- det β-emptyL         β-emptyL           =  refl
--- det (β-cons VL VW)     (ξ-caseL L—→L″)   =  ⊥-elim (V¬—→ (V-∷L VL VW) L—→L″)
--- det (β-cons _ _)      (β-cons _ _)        =  refl
-
 
 
 
