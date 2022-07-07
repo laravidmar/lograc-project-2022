@@ -247,6 +247,8 @@ data _—→_ : Term → Term → Set where
   β-μ : ∀ {x M}
       ------------------------------
     → μ x ⇒ M —→ M [ x := μ x ⇒ M ]
+  
+
 
   --Lists
 
@@ -639,7 +641,7 @@ nope₂ (⊢ƛ (⊢` ∋x · ⊢` ∋x′))  =  contradiction (∋-functional �
 
 
 
---Add some example for sum list that is append, podobno kot plus za natural numbers 
+
 
 
 

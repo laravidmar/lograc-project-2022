@@ -722,10 +722,11 @@ postulate
     → ¬ (Stuck N)
 
 postulate
-  identical : ∀ { M }
-    → Value M 
-      ------
-    → M —→ M
+  identity : ∀ {M}
+      ------------
+    → M —→ M  
+
+
 
 --Reduction is deterministic
 
@@ -765,8 +766,8 @@ det β-μ β-μ = refl
 -- List
 
 det (ξ-cons M—→M″) (ξ-cons M—→M′) = cong₂ `_∷L_ (det M—→M″ M—→M′) refl 
-det (ξ-cons p) (ξ-cons₂ x q) = cong₂ `_∷L_ (det p {!  !}) (det {!   !} q)
-det (ξ-cons₂ x p) (ξ-cons q) = cong₂ `_∷L_ (det {!  !} q) (det p {!  !})
+det (ξ-cons p) (ξ-cons₂ x q) = cong₂ `_∷L_ (det p identity) (det identity q)
+det (ξ-cons₂ x p) (ξ-cons q) = cong₂ `_∷L_ (det identity q) (det p identity)
 det (ξ-cons₂ xw  M—→M′) (ξ-cons₂ x M—→M″) = cong₂ `_∷L_ refl (det M—→M′ M—→M″)
 det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = cong₅ caseL_[emptyL⇒_∣_∷L_⇒_] (det L—→L′ L—→L″) refl refl refl refl 
 
