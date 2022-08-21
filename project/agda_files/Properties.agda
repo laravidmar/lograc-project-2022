@@ -361,6 +361,12 @@ preserve (⊢caseL (⊢cons {M = E} ⊢E ⊢L) ⊢M ⊢N) (β-cons VE VL)    = s
 -- Something like this 
 {-
 
+infixr 5 _++_
+
+_++_ : ∀ {A : Set} → `List A → `List A → `List A
+[]       ++ ys  =  ys
+(x ∷ xs) ++ ys  =  x ∷ (xs ++ ys) 
+
 lemmaₚ : Γ ++ (∅ , x ⦂ A , y ⦂ B) ++ Γ' ⊢ M ⦂ A → x ≢ y     -- We need to proof this and use it above
 
 -- where ++ is defined in lamda something like that
