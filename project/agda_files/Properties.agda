@@ -764,23 +764,11 @@ det β-μ β-μ = refl
 
 -- List
 
-<<<<<<< HEAD
-det (ξ-cons M—→M′) (ξ-cons M—→M″) = {!   !} -- cong `_∷L_ (det M—→M′ M—→M″) -- Sploh noče tega `_∷L_  zagrabit
-det (ξ-cons M—→M′) (ξ-cons₂ VN M—→M″) = {!   !}
-det (ξ-cons₂ VN M—→M″) (ξ-cons M—→M′) = {!   !}
-det (ξ-cons₂ VM M—→M′) (ξ-cons₂ VN M—→M″) = {!   !} -- cong `_∷L_ (det M—→M′ M—→M″)
-=======
 det (ξ-cons M—→M″) (ξ-cons M—→M′) = cong₂ `_∷L_ (det M—→M″ M—→M′) refl 
 det (ξ-cons p) (ξ-cons₂ x q) = cong₂ `_∷L_ (det p identity) (det identity q)
 det (ξ-cons₂ x p) (ξ-cons q) = cong₂ `_∷L_ (det identity q) (det p identity)
 det (ξ-cons₂ xw  M—→M′) (ξ-cons₂ x M—→M″) = cong₂ `_∷L_ refl (det M—→M′ M—→M″)
 det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = cong₅ caseL_[emptyL⇒_∣_∷L_⇒_] (det L—→L′ L—→L″) refl refl refl refl 
-
-{-
-{! cong₄ caseL_[emptyL⇒_∣_∶∶L_⇒_]
-                                              (det L—→L′ L—→L″) refl refl refl   !}
--}
->>>>>>> 5d07ce0f860e76747094821e1d8775eeeaf78716
 
 det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = cong₅ caseL_[emptyL⇒_∣_∷L_⇒_] (det L—→L′ L—→L″) refl refl refl refl 
 det (ξ-caseL L—→L′) (β-cons VL VW) = ⊥-elim (V¬—→ (V-∷L VL VW) L—→L′)
