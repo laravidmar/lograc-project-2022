@@ -118,7 +118,7 @@ progress (⊢cons ⊢M ⊢N) with progress ⊢M
 ...  | done VM with progress ⊢N
 ...     | step N—→N′                       = step (ξ-cons₂ VM N—→N′)
 ...     | done VN                          = done (V-∷L VM VN)
-progress (⊢caseL ⊢L ⊢M ⊢N) with progress ⊢L
+progress (⊢caseL ⊢L ⊢M x≢xs ⊢N) with progress ⊢L
 ... | step L—→L′                            =  step (ξ-caseL L—→L′)
 ... | done (V-emptyL)                         =  step β-emptyL
 ... | done (V-∷L VL VL')                       =  step (β-cons VL VL')
@@ -157,7 +157,7 @@ rename ρ (⊢μ ⊢M)           =  ⊢μ (rename (ext ρ) ⊢M)
 --lists
 rename ρ ⊢emptyL     =  ⊢emptyL
 rename ρ (⊢cons ⊢M ⊢N )   =  ⊢cons (rename ρ ⊢M) (rename ρ ⊢N)
-rename ρ (⊢caseL ⊢L ⊢M ⊢N ) = ⊢caseL (rename ρ ⊢L) (rename ρ ⊢M)  (rename (ext (ext ρ ))⊢N)
+rename ρ (⊢caseL ⊢L ⊢M x≢xs ⊢N ) = ⊢caseL (rename ρ ⊢L) (rename ρ ⊢M) x≢xs (rename (ext (ext ρ ))⊢N)
 --dvakrat treba uporabt ext zato ker mamo dvakrat v vejici da jih dobimo vn
 
 
@@ -320,11 +320,11 @@ subst {x = y} ⊢V (⊢μ {x = x} ⊢M) with x ≟ y
 subst ⊢V ⊢emptyL        =  ⊢emptyL
 subst ⊢V (⊢cons ⊢M ⊢N)    = ⊢cons (subst ⊢V ⊢M) (subst ⊢V ⊢N) 
 
-subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M ⊢N) with x ≟ y | xs ≟ y 
-... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL₁ ⊢N)   
-... | yes refl | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL₂ ⊢N)
-... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (dropL₃ ⊢N) 
-... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) (subst {x = y} ⊢V (swapL (xs≢y) ((≢-sym x≢y)) (⊢N))) 
+subst {x = y} ⊢V (⊢caseL {x = x} {xs = xs}  ⊢L ⊢M x≢xs ⊢N) with x ≟ y | xs ≟ y 
+... | yes refl | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) x≢xs (dropL₁ ⊢N)   
+... | yes refl | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) x≢xs (dropL₂ ⊢N)
+... | no  x≢y  | yes refl       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) x≢xs (dropL₃ ⊢N) 
+... | no  x≢y  | no  xs≢y       =  ⊢caseL (subst ⊢V ⊢L) (subst ⊢V ⊢M) x≢xs (subst {x = y} ⊢V (swapL (xs≢y) ((≢-sym x≢y)) (⊢N))) 
 
 --Preservation
 {-
@@ -354,27 +354,10 @@ preserve (⊢μ ⊢M)                 (β-μ)            =  subst (⊢μ ⊢M) �
 preserve ⊢emptyL                  ()
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons M—→M′)    =  ⊢cons (preserve ⊢M M—→M′) ⊢N
 preserve (⊢cons ⊢M ⊢N)            (ξ-cons₂ VM N—→N′)    =  ⊢cons ⊢M (preserve ⊢N N—→N′) 
-preserve (⊢caseL ⊢L ⊢M ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M ⊢N 
-preserve (⊢caseL ⊢emptyL ⊢M ⊢N)     (β-emptyL)         =  ⊢M  
-preserve (⊢caseL (⊢cons {M = E} ⊢E ⊢L) ⊢M ⊢N) (β-cons VE VL)    = subst ⊢L (subst ⊢E (swap {!   !} ⊢N))  -- we need to proof that xs ≢ x in general
+preserve (⊢caseL ⊢L ⊢M x≢xs ⊢N)        (ξ-caseL L—→L′)   =  ⊢caseL (preserve ⊢L L—→L′) ⊢M x≢xs ⊢N 
+preserve (⊢caseL ⊢emptyL ⊢M x≢xs ⊢N)     (β-emptyL)         =  ⊢M  
+preserve (⊢caseL (⊢cons {M = E} ⊢E ⊢L) ⊢M x≢xs ⊢N) (β-cons VE VL)    = subst ⊢L (subst ⊢E (swap (λ p → x≢xs (sym p)) ⊢N))
 
--- Something like this 
-{-
-
-infixr 5 _++_
-
-_++_ : ∀ {A : Set} → `List A → `List A → `List A
-[]       ++ ys  =  ys
-(x ∷ xs) ++ ys  =  x ∷ (xs ++ ys) 
-
-lemmaₚ : Γ ++ (∅ , x ⦂ A , y ⦂ B) ++ Γ' ⊢ M ⦂ A → x ≢ y     -- We need to proof this and use it above
-
--- where ++ is defined in lamda something like that
-
-Γ ++ ∅ = Γ
-Γ ++ (Γ' , x ⦂ A) = (Γ ++ Γ') , x ⦂ A
-
--}
 
 --Evaluation
 

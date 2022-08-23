@@ -9,6 +9,8 @@ open import Data.Product using (_×_; ∃; ∃-syntax) renaming (_,_ to ⟨_,_�
 open import Relation.Nullary using (¬_; Dec; yes; no)
 open import Relation.Nullary.Decidable using (False; toWitnessFalse)
 
+import Relation.Binary.PropositionalEquality as Eq
+open Eq    using (sym ) renaming (subst to subst₁)
 import agda_files.More as DB
 
 infix   4  _∋_⦂_
@@ -251,6 +253,11 @@ rng≡ refl = refl
 List≢⇒ : ∀ {A B C} → `List A ≢ C ⇒ B
 List≢⇒ ()
 
+List≢N : ∀ {A} → `List A ≢ `ℕ 
+List≢N ()
+
+N≢List : ∀ {A} → `ℕ ≢ `List A 
+N≢List ()
 
 uniq-∋ : ∀ {Γ x A B} → Γ ∋ x ⦂ A → Γ ∋ x ⦂ B → A ≡ B
 uniq-∋ Z Z                 =  refl
@@ -263,6 +270,9 @@ uniq-↑ : ∀ {Γ M A B} → Γ ⊢ M ↑ A → Γ ⊢ M ↑ B → A ≡ B
 uniq-↑ (⊢` ∋x) (⊢` ∋x′)       =  uniq-∋ ∋x ∋x′
 uniq-↑ (⊢L · ⊢M) (⊢L′ · ⊢M′)  =  rng≡ (uniq-↑ ⊢L ⊢L′)
 uniq-↑ (⊢↓ ⊢M) (⊢↓ ⊢M′)       =  refl
+
+equalityL : ∀ {A B} → `List A ≡ `List B → A ≡ B
+equalityL refl = refl
 
 
 
@@ -357,7 +367,7 @@ inherit Γ (`suc M) (`List A)     = no (λ())
 inherit Γ (`case L [zero⇒ M |suc x ⇒ N ]) A with synthesize Γ L
 ... | no ¬∃                 =  no  (λ{ (⊢case ⊢L  _ _) → ¬∃ ⟨ `ℕ , ⊢L ⟩})
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢case ⊢L′ _ _) → ℕ≢⇒ (uniq-↑ ⊢L′ ⊢L) })
-... | yes ⟨ `List A , ⊢L ⟩   = no (λ{ (⊢case ⊢L′ _ _) → {!   !}  })
+... | yes ⟨ `List A , ⊢L ⟩   = no (λ{ (⊢case ⊢L′ _ _) → List≢N (uniq-↑ ⊢L ⊢L′)})
 ... | yes ⟨ `ℕ ,    ⊢L ⟩ with inherit Γ M A
 ...    | no ¬⊢M             =  no  (λ{ (⊢case _ ⊢M _) → ¬⊢M ⊢M })
 ...    | yes ⊢M with inherit (Γ , x ⦂ `ℕ) N A
@@ -385,14 +395,16 @@ inherit Γ (` M ∷L L) (`List A)   with inherit Γ M A
 ...   | yes ⊢L             = yes (⊢∷L ⊢M ⊢L) 
 inherit Γ (` M ∷L L) (A ⇒ A₁)   = no (λ())
 inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L 
-... | no  ¬∃               = no λ{ (⊢caseL ⊢L  _ _) → ¬∃ ⟨ `List {!   !} , ⊢L ⟩} 
+... | no  ¬∃               = no λ{ (⊢caseL {A = A} ⊢L   _ _) → ¬∃ ⟨ `List A , ⊢L ⟩} 
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢caseL ⊢L′ _ _) → List≢⇒ (uniq-↑ ⊢L′ ⊢L) })
-... | yes ⟨ `ℕ , ⊢L ⟩   = no λ{ (⊢caseL ⊢L′ _ _) → {!   !}  } 
+... | yes ⟨ `ℕ , ⊢L ⟩   = no λ{ (⊢caseL ⊢L′ _ _) → N≢List ((uniq-↑ ⊢L ⊢L′))  } 
 ... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M B
 ...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M ⊢M }
 ...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N B
-...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!   !} }) 
+...       | no ¬⊢N          =  no  (λ{ (⊢caseL {L = L′} _ _ ⊢N) → ¬⊢N (subst₁ (λ Z₁ → Γ , x ⦂ Z₁ , y ⦂ `List Z₁ ⊢ N ↓ B) (equalityL (uniq-↑ ⊢L ⊢L)) {!   !}) }) 
 ...       | yes ⊢N          =  yes (⊢caseL ⊢L ⊢M ⊢N) 
+
+
 
 
 

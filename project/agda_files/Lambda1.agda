@@ -573,6 +573,7 @@ data _⊢_⦂_ : Context → Term → Type → Set where
   ⊢caseL : ∀ {Γ L M x xs N A B}
     → Γ ⊢ L ⦂ `List A
     → Γ ⊢ M ⦂ B
+    → x ≢ xs
     → Γ , x ⦂ A , xs ⦂ `List A ⊢ N ⦂ B
       -------------------------------------
     → Γ ⊢ caseL L [emptyL⇒ M ∣ x ∷L xs ⇒ N ] ⦂ B
