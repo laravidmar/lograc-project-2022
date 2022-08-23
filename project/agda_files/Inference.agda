@@ -357,7 +357,7 @@ inherit Γ (`suc M) (`List A)     = no (λ())
 inherit Γ (`case L [zero⇒ M |suc x ⇒ N ]) A with synthesize Γ L
 ... | no ¬∃                 =  no  (λ{ (⊢case ⊢L  _ _) → ¬∃ ⟨ `ℕ , ⊢L ⟩})
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢case ⊢L′ _ _) → ℕ≢⇒ (uniq-↑ ⊢L′ ⊢L) })
-... | yes ⟨ `List A , ⊢L ⟩   = no (λ{ (⊢case ⊢L′ _ _) → {!   !} })
+... | yes ⟨ `List A , ⊢L ⟩   = no (λ{ (⊢case ⊢L′ _ _) → {!   !}  })
 ... | yes ⟨ `ℕ ,    ⊢L ⟩ with inherit Γ M A
 ...    | no ¬⊢M             =  no  (λ{ (⊢case _ ⊢M _) → ¬⊢M ⊢M })
 ...    | yes ⊢M with inherit (Γ , x ⦂ `ℕ) N A
@@ -372,7 +372,6 @@ inherit Γ (M ↑) B with synthesize Γ M
 ...   | no  A≢B             =  no  (¬switch ⊢M A≢B)
 ...   | yes A≡B             =  yes (⊢↑ ⊢M A≡B)
 
-
 --lists
 inherit Γ (ƛ x ⇒ M) (`List A)    = no (λ())
 inherit Γ `emptyL `ℕ      =   no (λ())
@@ -386,14 +385,14 @@ inherit Γ (` M ∷L L) (`List A)   with inherit Γ M A
 ...   | yes ⊢L             = yes (⊢∷L ⊢M ⊢L) 
 inherit Γ (` M ∷L L) (A ⇒ A₁)   = no (λ())
 
-inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L
-... | no ¬∃                 = no λ{ (⊢caseL ⊢L  _ _) → ¬∃ ⟨ `List {!   !} , ⊢L ⟩} 
+inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L 
+... | no  ¬∃               = no λ{ (⊢caseL ⊢L  _ _) → ¬∃ ⟨ `List {!   !} , ⊢L ⟩} 
 ... | yes ⟨ _ ⇒ _ , ⊢L ⟩    =  no  (λ{ (⊢caseL ⊢L′ _ _) → List≢⇒ (uniq-↑ ⊢L′ ⊢L) })
-... | yes ⟨ `ℕ , ⊢L ⟩   = no λ{ (⊢caseL ⊢L′ _ _) → {!   !} } 
+... | yes ⟨ `ℕ , ⊢L ⟩   = no λ{ (⊢caseL ⊢L′ _ _) → {!   !}  } 
 ... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M B
 ...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M ⊢M }
 ...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N B
-...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!  !} }) 
+...       | no ¬⊢N          =  no  (λ{ (⊢caseL _ _ ⊢N) → ¬⊢N {!    !} }) 
 ...       | yes ⊢N          =  yes (⊢caseL ⊢L ⊢M ⊢N) 
 
 
@@ -572,12 +571,3 @@ _ = refl
 _ : ∥ ⊢2+2ᶜ ∥⁺ ≡ DB.2+2ᶜ
 _ = refl
 
-
-
-
-
-
-
-
-
--- To je še treba nardit 
