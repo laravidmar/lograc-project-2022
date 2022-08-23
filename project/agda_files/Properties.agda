@@ -770,13 +770,12 @@ det β-μ β-μ = refl
 
 -- List
 
-det (ξ-cons M—→M″) (ξ-cons M—→M′) = cong₂ `_∷L_ (det M—→M″ M—→M′) refl 
+det (ξ-cons M—→M′) (ξ-cons M—→M″) = cong₂ `_∷L_ (det M—→M′ M—→M″) refl 
 det (ξ-cons p) (ξ-cons₂ x q) = cong₂ `_∷L_ (det p identity) (det identity q)
 det (ξ-cons₂ x p) (ξ-cons q) = cong₂ `_∷L_ (det identity q) (det p identity)
 det (ξ-cons₂ xw  M—→M′) (ξ-cons₂ x M—→M″) = cong₂ `_∷L_ refl (det M—→M′ M—→M″)
 det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = cong₅ caseL_[emptyL⇒_∣_∷L_⇒_] (det L—→L′ L—→L″) refl refl refl refl 
 
-det (ξ-caseL L—→L′) (ξ-caseL L—→L″) = cong₅ caseL_[emptyL⇒_∣_∷L_⇒_] (det L—→L′ L—→L″) refl refl refl refl 
 det (ξ-caseL L—→L′) (β-cons VL VW) = ⊥-elim (V¬—→ (V-∷L VL VW) L—→L′)
 det β-emptyL β-emptyL = refl
 det (β-cons VL VW) (ξ-caseL L—→L″) = ⊥-elim (V¬—→ (V-∷L VL VW) L—→L″)
