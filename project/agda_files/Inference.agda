@@ -401,8 +401,8 @@ inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L
 ... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M B
 ...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M ⊢M }
 ...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N B
-...       | no ¬⊢N          =  no  (λ{ (⊢caseL {L = L′} _ _ ⊢N) → ¬⊢N (subst₁ (λ Z₁ → Γ , x ⦂ Z₁ , y ⦂ `List Z₁ ⊢ N ↓ B) (equalityL (uniq-↑ ⊢L ⊢L)) {!   !}) }) 
-...       | yes ⊢N          =  yes (⊢caseL ⊢L ⊢M ⊢N) 
+...       | no ¬⊢N          =  no  (λ{ (⊢caseL {Γ} {⊢L′} _ _ ⊢N) → ¬⊢N (subst₁ (λ Z → Γ , x ⦂ Z , y ⦂ `List Z ⊢ N ↓ B) (equalityL (uniq-↑ ⊢L′ ⊢L)) {!   !} ) }) 
+...       | yes ⊢N          = yes (⊢caseL ⊢L ⊢M ⊢N) 
 
 
 

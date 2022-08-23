@@ -1,6 +1,8 @@
-# Skeleton repository for the Logika v računalništvu student projects
+# Agda library extension with lists
 
-This repository is set up as an Agda library and it contains:
+## Content
+
+Our repository contains the following:
 
 * `lograc-project.agda-lib`: the library configuration file which contains
   the list of file system paths that Agda should include
