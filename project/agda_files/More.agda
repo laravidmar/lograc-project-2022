@@ -28,10 +28,7 @@ infix  9 `_
 infix  9 S_
 infix  9 #_
 
-{-
-We define a `Nat` type equivalent to the built-in natural number type
-with multiplication as a primitive operation on numbers:
--}
+
 
 data Type : Set where
   `ℕ    : Type
@@ -56,7 +53,7 @@ data _∋_ : Context → Type → Set where
       ---------
     → Γ , A ∋ B
 
---Terms and the typing judgment
+
 data _⊢_ : Context → Type → Set where
 
 -- variables
@@ -756,4 +753,3 @@ sucᶜ = ƛ `suc (# 0)
 
 
 
--- Začela delat ni končano

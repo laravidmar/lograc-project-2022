@@ -45,23 +45,7 @@ data Context : Set where
 data Term⁺ : Set
 data Term⁻ : Set
 
-{-
-The syntax of terms is defined by mutual recursion.
-We use `Term⁺` and `Term⁻`
-for terms with synthesized and inherited types, respectively.
 
-Γ ⊢ M ↑ A
-    Γ ⊢ M ↓ A
-
-The first of these _synthesises_ the type of a term, as before,
-while the second _inherits_ the type.  In the first, the context
-and term are inputs and the type is an output; while in the
-second, all three of the context, term, and type are inputs.
-
-, M ↑ for this purpose. The typing judgment checks that the inherited and synthesised types match.
-
-M ↓ A   The typing judgment returns A as the synthesized type of the term as a whole, as well as using it as the inherited type for M.
--}
 
 data Term⁺ where
   `_                       : Id → Term⁺
@@ -130,14 +114,6 @@ data _∋_⦂_ : Context → Id → Type → Set where
       -----------------
     → Γ , y ⦂ B ∋ x ⦂ A
 
-{-
-Note the inclusion of the switching forms,
-`M ↓ A` and `M ↑`:
-
-As with syntax, the judgments for synthesizing
-and inheriting types are mutually recursive
-
--}
 
 
 data _⊢_↑_ : Context → Term⁺ → Type → Set
@@ -213,10 +189,7 @@ data _⊢_↓_ where
       -------------------------------------
     → Γ ⊢ `caseL L [emptyL⇒ M ∣ x ∷L xs ⇒ N ] ↓ B
 
-{-
-The rule for `M ↑` requires the ability to decide whether two types
-are equal.
--}
+
 _≟Tp_ : (A B : Type) → Dec (A ≡ B)
 `ℕ      ≟Tp `ℕ              =  yes refl
 `ℕ      ≟Tp (A ⇒ B)         =  no λ()
@@ -249,7 +222,7 @@ rng≡ refl = refl
 ℕ≢⇒ : ∀ {A B} → `ℕ ≢ A ⇒ B
 ℕ≢⇒ ()
 
---adding that ⇒ does not hold for lists
+
 List≢⇒ : ∀ {A B C} → `List A ≢ C ⇒ B
 List≢⇒ ()
 
@@ -295,10 +268,6 @@ lookup (Γ , y ⦂ B) x with x ≟ y
 ...             | no  ¬∃          =  no  (ext∋ x≢y ¬∃)
 ...             | yes ⟨ A , ∋x ⟩  =  yes ⟨ A , S x≢y ∋x ⟩
 
-{-
-If `Γ ⊢ L ↑ A ⇒ B` holds but `Γ ⊢ M ↓ A` does not hold, then
-there is no term `B′` such that `Γ ⊢ L · M ↑ B′` holds:
--}
 ¬arg : ∀ {Γ A B L M}
   → Γ ⊢ L ↑ A ⇒ B
   → ¬ Γ ⊢ M ↓ A
@@ -306,9 +275,7 @@ there is no term `B′` such that `Γ ⊢ L · M ↑ B′` holds:
   → ¬ (∃[ B′ ]( Γ ⊢ L · M ↑ B′ ))
 ¬arg ⊢L ¬⊢M ⟨ B′ , ⊢L′ · ⊢M′ ⟩ rewrite dom≡ (uniq-↑ ⊢L ⊢L′) = ¬⊢M ⊢M′
 
-{-
-If `Γ ⊢ M ↑ A` holds and `A ≢ B`, then `Γ ⊢ (M ↑) ↓ B` does not hold:
--}
+
 
 ¬switch : ∀ {Γ M A B}
   → Γ ⊢ M ↑ A
@@ -319,14 +286,7 @@ If `Γ ⊢ M ↑ A` holds and `A ≢ B`, then `Γ ⊢ (M ↑) ↓ B` does not ho
 
 --Synthesize and inherit types
 
-{-
-Synthesis is given
-a context `Γ` and a synthesis term `M` and either
-returns a type `A` and evidence that `Γ ⊢ M ↑ A`, or its negation.
-Inheritance is given a context `Γ`, an inheritance term `M`,
-and a type `A` and either returns evidence that `Γ ⊢ M ↓ A`,
-or its negation:
--}
+
 
 synthesize : ∀ (Γ : Context) (M : Term⁺)
              ---------------------------
@@ -401,7 +361,7 @@ inherit Γ (`caseL L [emptyL⇒ M ∣ x ∷L y ⇒ N ]) B with synthesize Γ L
 ... | yes ⟨ `List A ,    ⊢L ⟩ with inherit Γ M B
 ...    | no ¬⊢M             = no λ{ (⊢caseL _ ⊢M _) → ¬⊢M ⊢M }
 ...    | yes ⊢M with inherit (Γ , x ⦂ A , y ⦂ `List A) N B
-...       | no ¬⊢N          =  no  (λ{ (⊢caseL {Γ} {⊢L′} _ _ ⊢N) → ¬⊢N (subst₁ (λ Z → Γ , x ⦂ Z , y ⦂ `List Z ⊢ N ↓ B) (equalityL (uniq-↑ ⊢L′ ⊢L)) {!   !} ) }) 
+...       | no ¬⊢N          =  no  (λ{ (⊢caseL ⊢L′ _ ⊢N) → ¬⊢N (subst₁ (λ Z → Γ , x ⦂ Z , y ⦂ `List Z ⊢ N ↓ B )(equalityL (uniq-↑ ⊢L′ ⊢L )) ⊢N)  })
 ...       | yes ⊢N          = yes (⊢caseL ⊢L ⊢M ⊢N) 
 
 

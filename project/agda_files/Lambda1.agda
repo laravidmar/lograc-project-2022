@@ -38,7 +38,6 @@ data Term : Set where
   caseL_[emptyL⇒_∣_∷L_⇒_]   : Term → Term → Id  →  Id →  Term → Term
 
 
---We added the constructor of lists so emptyL = [] and _::_ is adding to a list and case_blablabla is checking if list is empty or element is in there
 
 
 
@@ -127,36 +126,11 @@ data Value : Term → Set where
 
 
 
-{-
-EXAMPLE 
-* `` (ƛ "x" ⇒ ` "y") [ "y" := `zero ] `` yields `` ƛ "x" ⇒ `zero ``.
-* `` (ƛ "x" ⇒ ` "x") [ "x" := `zero ] `` yields `` ƛ "x" ⇒ ` "x" ``. --> HERE IS AN identity
-* `` (ƛ "y" ⇒ ` "y") [ "x" := `zero ] `` yields `` ƛ "y" ⇒ ` "y" ``. --> HERE IS AN identity
-
-In the last but one example, substituting `` `zero `` for `x` in
-`` ƛ "x" ⇒ ` "x" `` does _not_ yield `` ƛ "x" ⇒ `zero ``,
-since `x` is bound in the lambda abstraction.
-The choice of bound names is irrelevant: both
-`` ƛ "x" ⇒ ` "x" `` and `` ƛ "y" ⇒ ` "y" `` stand for the
-identity function.  One way to think of this is that `x` within
-the body of the abstraction stands for a _different_ variable than
-`x` outside the abstraction, they just happen to have the same name.
-
--}
-
-{- BOUNDED AND FREE VARIABLES 
- (ƛ "y" ⇒ ` "y") · ` "x"
-
-in which `y` is bound and `x` is free. 
-
--}
-
---`N [ x := V ]` to pomeni da v N ju zamenjamo V za x , tj. substitution , V needs to be a closed term 
 
 infix 9 _[_:=_]
 
 _[_:=_] : Term → Id → Term → Term
-(` x) [ y := V ] with x ≟ y    --≟ to pomeni ali sta spremenljivki isti ali ne... ločimo primera yes and no
+(` x) [ y := V ] with x ≟ y    
 ... | yes _          =  V
 ... | no  _          =  ` x
 (ƛ x ⇒ N) [ y := V ] with x ≟ y
@@ -175,8 +149,8 @@ _[_:=_] : Term → Id → Term → Term
 (` M' ∷L M) [ y := V ]  = ` (M' [ y := V ]) ∷L ( M [ y := V ])
 (caseL L [emptyL⇒ M ∣ x' ∷L  x ⇒ N ]) [ y := V ] with x ≟ y | x' ≟ y
 ... | yes _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N ]
-... | no  _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ (x') ∷L x ⇒ N ] -- to pomoje ni prou ker kako in ve da mora to aplicirat ravno na prvi argument
-... | yes _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N ] --tuki bi mogu na druzga narest 
+... | no  _  | yes _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ (x') ∷L x ⇒ N ] 
+... | yes _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L x ⇒ N ] 
 ... | no  _  | no _        =  caseL L [ y := V ] [emptyL⇒ M [ y := V ] ∣ x' ∷L (x) ⇒ N [ y := V ] ]
 
 
@@ -196,14 +170,7 @@ _ = refl
 _ : (ƛ "y" ⇒ ` "y") [ "x" := `zero ] ≡ ƛ "y" ⇒ ` "y"
 _ = refl
 
---If `M —→ N`, we say that
---term `M` _reduces_ to term `N`, or equivalently,
---term `M` _steps_ to term `N`.
 
-{-
-If a term is a value, then no reduction applies; conversely,
-if a reduction applies to a term then it is not a value.
--}
 
 infix 4 _—→_
 
@@ -271,10 +238,10 @@ data _—→_ : Term → Term → Set where
   
   β-emptyL : ∀ {x y M N}
       ----------------------------------------
-    → caseL `emptyL [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ M --začetni seznam je prazn zato vrne M 
+    → caseL `emptyL [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ M 
 
   β-cons : ∀ {x y V W M N}
-    → Value V --imamo vrednost V se pravi seznma ni prazn in gre v drugi if stavek
+    → Value V 
     → Value W
       ---------------------------------------------------
     → caseL ` V ∷L W [emptyL⇒ M ∣ x ∷L y ⇒ N ] —→ N [ x := V ] [ y := W ]
@@ -321,27 +288,7 @@ data _—↠′_ : Term → Term → Set where
     → L —↠′ N
 
 -- Confluence
-{-
-_confluent_.  If term `L` reduces to two other terms,
-`M` and `N`, then both of these reduce to a common term `P`.
-It can be illustrated as follows:
 
-               L
-              / \
-             /   \
-            /     \
-           M       N
-            \     /
-             \   /
-              \ /
-               P
-
-If each line stands for zero
-or more reduction steps, this is called confluence,
-while if the top two lines stand for a single reduction
-step and the bottom two stand for zero or more reduction
-steps it is called the diamond property.
--}
 postulate
   confluence : ∀ {L M N}
     → ((L —↠ M) × (L —↠ N))
@@ -468,17 +415,14 @@ data Type : Set where
   `ℕ : Type
   `List :  Type → Type
 
-{-
-We write `∅` for the empty context, and `Γ , x ⦂ A`
-for the context that extends `Γ` by mapping variable `x` to type `A`.
--}
+
 infixl 5  _,_⦂_
 
 data Context : Set where
   ∅     : Context
   _,_⦂_ : Context → Id → Type → Context
 
---indicates in context `Γ` that variable `x` has type `A`.
+
 
 infix  4  _∋_⦂_
 
@@ -642,9 +586,3 @@ nope₂ (⊢ƛ (⊢` ∋x · ⊢` ∋x′))  =  contradiction (∋-functional �
 
 
 
-
-
-
-
-
--- Narjena 
