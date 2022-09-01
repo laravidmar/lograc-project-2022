@@ -192,7 +192,7 @@ dropL₁ {Γ} {x} {M} {A} {B} {D} {C} ⊢M = rename ρ ⊢M
   ρ Z                 =  Z
   ρ (S x≢x Z)         =  ⊥-elim (x≢x refl) 
   ρ (S z≢x (S _ Z))  =  S z≢x ( S z≢x (⊥-elim (z≢x refl))) 
-  ρ (S z≢x (S z≢x (S _ ∋z)))  =  S z≢x (S z≢x ∋z)
+  ρ (S z≢x (S _ (S _ ∋z)))  =  S z≢x (S z≢x ∋z)
 
 
 dropL₂ : ∀ {Γ x y M A B D C}
